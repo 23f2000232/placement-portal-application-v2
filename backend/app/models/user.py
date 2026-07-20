@@ -28,6 +28,25 @@ class User(BaseModel):
         nullable=False,
     )
 
+    student = db.relationship(
+        "Student",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+
+    company = db.relationship(
+        "Company",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    notifications = db.relationship(
+        "Notification",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
     def set_password(self, password: str) -> None:
         self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
 
