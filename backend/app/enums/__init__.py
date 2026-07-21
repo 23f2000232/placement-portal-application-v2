@@ -1,3 +1,4 @@
+from app.enums.account_status import AccountStatus
 from app.enums.application_status import ApplicationStatus
 from app.enums.approval_status import ApprovalStatus
 from app.enums.error_code import ErrorCode
@@ -18,4 +19,5 @@ __all__ = [
     "NotificationType",
     "ApplicationStatus",
     "ErrorCode",
+    "AccountStatus",
 ]

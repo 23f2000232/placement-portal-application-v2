@@ -1,3 +1,4 @@
+from app.enums.account_status import AccountStatus
 from app.enums.user_role import UserRole
 from app.extensions import db
 from app.models.base_model import BaseModel
@@ -26,6 +27,12 @@ class User(BaseModel):
     is_active = db.Column(
         db.Boolean,
         default=True,
+        nullable=False,
+    )
+
+    account_status = db.Column(
+        db.Enum(AccountStatus, native_enum=False),
+        default=AccountStatus.ACTIVE,
         nullable=False,
     )
 

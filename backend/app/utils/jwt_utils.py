@@ -10,7 +10,7 @@ from app.enums import UserRole
 from app.models.user import User
 
 
-def create_access_token_for_user(user: User) -> str:
+def create_access_token_for_user(user: User | None) -> str:
     return create_access_token(
         identity=str(user.id),
         additional_claims={

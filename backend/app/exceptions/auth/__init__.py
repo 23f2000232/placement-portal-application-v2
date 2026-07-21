@@ -1,3 +1,6 @@
+from app.exceptions.auth.account_blacklisted_exception import (
+    AccountBlacklistedException,
+)
 from app.exceptions.auth.account_disabled_exception import AccountDisabledException
 from app.exceptions.auth.account_not_approved_exception import (
     AccountNotApprovedException,
@@ -16,4 +19,5 @@ __all__ = [
     "EmailAlreadyExistsException",
     "InvalidCredentialsException",
     "UnauthorizedException",
+    "AccountBlacklistedException",
 ]

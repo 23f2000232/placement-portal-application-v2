@@ -19,7 +19,8 @@ class CompanyRegistrationRequest(BaseModel):
         max_length=100,
     )
 
-    website: str = Field(
+    website: str | None = Field(
+        default=None,
         min_length=5,
         max_length=500,
     )

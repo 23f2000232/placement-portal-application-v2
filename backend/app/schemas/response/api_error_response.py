@@ -1,4 +1,5 @@
 from datetime import datetime
+from http import HTTPStatus
 
 from pydantic import BaseModel, ConfigDict
 
@@ -12,7 +13,7 @@ class ApiErrorResponse(BaseModel):
     )
 
     timestamp: datetime
-    status: int
+    status: HTTPStatus
     error: ErrorCode
     message: str
     path: str

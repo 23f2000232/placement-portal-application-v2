@@ -1,6 +1,6 @@
 from sqlalchemy import select
 
-from app.enums import UserRole
+from app.enums import UserRole, AccountStatus
 from app.extensions import db
 from app.models.user import User
 from app.repositories.base_repository import BaseRepository
@@ -21,3 +21,11 @@ class UserRepository(BaseRepository[User]):
 
     def get_active_users(self, active: bool = True) -> list[User]:
         return db.session.scalars(select(User).where(User.is_active.is_(active))).all()
+
+    def get_by_account_status(
+        self,
+        status: AccountStatus,
+    ) -> list[User]:
+        return db.session.scalars(
+            select(User).where(User.account_status == status)
+        ).all()
