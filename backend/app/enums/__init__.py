@@ -1,5 +1,6 @@
 from app.enums.application_status import ApplicationStatus
 from app.enums.approval_status import ApprovalStatus
+from app.enums.error_code import ErrorCode
 from app.enums.interview_mode import InterviewMode
 from app.enums.interview_status import InterviewStatus
 from app.enums.notification_type import NotificationType
@@ -16,4 +17,5 @@ __all__ = [
     "PlacementStatus",
     "NotificationType",
     "ApplicationStatus",
+    "ErrorCode",
 ]

@@ -1,6 +1,7 @@
 from app.enums.user_role import UserRole
-from app.extensions import bcrypt, db
+from app.extensions import db
 from app.models.base_model import BaseModel
+from app.utils import hash_password, verify_password
 
 
 class User(BaseModel):
@@ -48,10 +49,10 @@ class User(BaseModel):
     )
 
     def set_password(self, password: str) -> None:
-        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+        self.password_hash = hash_password(password)
 
     def check_password(self, password: str) -> bool:
-        return bcrypt.check_password_hash(self.password_hash, password)
+        return verify_password(password, self.password_hash)
 
     def set_email(self, email: str) -> None:
         self.email = email.strip().lower()

@@ -3,6 +3,7 @@ from flask import Flask
 
 from app.config import Config
 from app.extensions import bcrypt, cors, db, jwt
+from app.handlers.exception_handler import register_exception_handlers
 from app.logging_config import configure_logging
 from app.models import *
 from app.seed import seed_admin
@@ -14,6 +15,7 @@ def create_app() -> Flask:
 
     app = Flask(__name__)
     app.config.from_object(Config)
+    register_exception_handlers(app)
 
     db.init_app(app)
     bcrypt.init_app(app)
