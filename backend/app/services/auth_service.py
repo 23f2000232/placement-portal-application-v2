@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from app.enums import UserRole, ApprovalStatus, AccountStatus
 from app.exceptions.auth import (
@@ -181,5 +182,34 @@ class AuthService:
                     or company.approval_status != ApprovalStatus.APPROVED
                 ):
                     raise AccountNotApprovedException()
+            case _:
+                raise InvalidCredentialsException()
+
+    def get_current_user(
+        self,
+        user_id: UUID,
+    ) -> StudentResponse | CompanyResponse:
+        user = self.user_repository.get_by_id(user_id)
+
+        if user is None:
+            raise InvalidCredentialsException()
+
+        match user.role:
+            case UserRole.STUDENT:
+                student = self.student_repository.get_by_user_id(user.id)
+
+                if student is None:
+                    raise InvalidCredentialsException()
+
+                return StudentMapper.to_response(student)
+
+            case UserRole.COMPANY:
+                company = self.company_repository.get_by_user_id(user.id)
+
+                if company is None:
+                    raise InvalidCredentialsException()
+
+                return CompanyMapper.to_response(company)
+
             case _:
                 raise InvalidCredentialsException()

@@ -7,7 +7,7 @@ from flask_jwt_extended import (
 )
 
 from app.enums import UserRole
-from app.models.user import User
+from app.models import User
 
 
 def create_access_token_for_user(user: User | None) -> str:

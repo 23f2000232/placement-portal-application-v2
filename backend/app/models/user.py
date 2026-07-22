@@ -2,7 +2,7 @@ from app.enums.account_status import AccountStatus
 from app.enums.user_role import UserRole
 from app.extensions import db
 from app.models.base_model import BaseModel
-from app.utils import hash_password, verify_password
+from app.utils.password_utils import hash_password, verify_password
 
 
 class User(BaseModel):

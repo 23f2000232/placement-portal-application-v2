@@ -4,10 +4,10 @@ from app.enums import ErrorCode
 from app.exceptions.app_exception import AppException
 
 
-class StudentNotFoundException(AppException):
+class StudentAlreadyApprovedException(AppException):
     def __init__(self, student_id):
         super().__init__(
-            f"Student {student_id} not found.",
-            ErrorCode.STUDENT_NOT_FOUND,
+            f"Your account {student_id} is already approved.",
+            ErrorCode.ACCOUNT_NOT_APPROVED,
             HTTPStatus.UNAUTHORIZED,
         )
