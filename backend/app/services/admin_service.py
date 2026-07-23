@@ -27,7 +27,7 @@ from app.repositories import (
     PlacementRecordRepository,
 )
 from app.schemas.common.pagination_request import PaginationRequest
-from app.schemas.requests import sort_request
+from app.schemas.requests import user_sort_request, user_search_request
 from app.schemas.requests.user_filter_request import UserFilterRequest
 from app.schemas.response.admin import StudentSummaryResponse, CompanySummaryResponse
 from app.schemas.response.admin.user_summary_response import UserSummaryResponse
@@ -211,7 +211,8 @@ class AdminService:
         self,
         pagination: PaginationRequest,
         filters: UserFilterRequest,
-        sorting: sort_request.UserSortRequest,
+        sorting: user_sort_request.UserSortRequest,
+        search: user_search_request.UserSearchRequest,
     ) -> PageResponse[UserSummaryResponse]:
         self.logger.info(
             "Fetching users (page=%d, size=%d)",
@@ -228,6 +229,7 @@ class AdminService:
             size=pagination.size,
             filters=filters,
             sorting=sorting,
+            search=search,
         )
 
         self.logger.info(

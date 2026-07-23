@@ -4,8 +4,9 @@ from app.enums import UserRole, AccountStatus, SortDirection, UserSortField
 from app.extensions import db
 from app.models.user import User
 from app.repositories.base_repository import BaseRepository
-from app.schemas.requests.sort_request import UserSortRequest
+from app.schemas.requests import UserSearchRequest
 from app.schemas.requests.user_filter_request import UserFilterRequest
+from app.schemas.requests.user_sort_request import UserSortRequest
 
 
 class UserRepository(BaseRepository[User]):
@@ -61,11 +62,13 @@ class UserRepository(BaseRepository[User]):
         size: int,
         filters: UserFilterRequest,
         sorting: UserSortRequest,
+        search: UserSearchRequest,
     ) -> list[User]:
         offset = (page - 1) * size
 
         query = select(User)
         query = self._apply_filters(query, filters)
+        query = self._apply_search(query, search)
         query = self._apply_sorting(
             query,
             sorting,
@@ -95,5 +98,15 @@ class UserRepository(BaseRepository[User]):
             query = query.order_by(column.asc())
         else:
             query = query.order_by(column.desc())
+
+        return query
+
+    def _apply_search(
+        self,
+        query: Select,
+        search: UserSearchRequest,
+    ) -> Select:
+        if search.search:
+            query = query.where(User.email.ilike(f"%{search.search}%"))
 
         return query

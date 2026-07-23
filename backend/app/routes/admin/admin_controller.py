@@ -4,8 +4,9 @@ from flask import Blueprint, jsonify, request
 
 from app.dependencies import admin_service
 from app.schemas.common.pagination_request import PaginationRequest
-from app.schemas.requests.sort_request import UserSortRequest
+from app.schemas.requests import UserSearchRequest
 from app.schemas.requests.user_filter_request import UserFilterRequest
+from app.schemas.requests.user_sort_request import UserSortRequest
 
 admin_bp = Blueprint(
     "admin",
@@ -72,39 +73,45 @@ def get_users():
     args = request.args.to_dict(flat=True)
 
     pagination = PaginationRequest.model_validate(
-        {key: args[key] for key in ("page", "size") if key in args}
+        pick(args, "page", "size"),
     )
 
     filters = UserFilterRequest.model_validate(
-        {
-            key: args[key]
-            for key in (
-                "role",
-                "account_status",
-                "is_active",
-            )
-            if key in args
-        }
+        pick(
+            args,
+            "role",
+            "account_status",
+            "is_active",
+        ),
     )
 
     sorting = UserSortRequest.model_validate(
-        {
-            key: args[key]
-            for key in (
-                "sort_by",
-                "sort_direction",
-            )
-            if key in args
-        }
+        pick(
+            args,
+            "sort_by",
+            "sort_direction",
+        ),
+    )
+
+    search = UserSearchRequest.model_validate(
+        pick(args, "search"),
     )
 
     response = admin_service.get_users(
         pagination=pagination,
         filters=filters,
         sorting=sorting,
+        search=search,
     )
 
     return (
         jsonify(response.model_dump(mode="json")),
         HTTPStatus.OK,
     )
+
+
+def pick(
+    data: dict[str, str],
+    *keys: str,
+) -> dict[str, str]:
+    return {key: data[key] for key in keys if key in data}
