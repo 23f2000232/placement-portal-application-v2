@@ -1,7 +1,7 @@
 from typing import Generic, TypeVar
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from app.extensions import db
 
@@ -33,3 +33,20 @@ class BaseRepository(Generic[T]):
 
     def rollback(self) -> None:
         db.session.rollback()
+
+    def count(self):
+        return db.session.scalar(select(func.count()).select_from(self.model))
+
+    def get_page(
+        self,
+        page: int,
+        size: int,
+    ) -> list[T]:
+        offset = (page - 1) * size
+
+        return db.session.scalars(
+            select(self.model)
+            .order_by(self.model.created_at.desc())
+            .offset(offset)
+            .limit(size)
+        ).all()

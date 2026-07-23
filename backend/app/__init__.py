@@ -6,6 +6,7 @@ from app.extensions import bcrypt, cors, db, jwt
 from app.handlers.exception_handler import register_exception_handlers
 from app.logging_config import configure_logging
 from app.models import *
+from app.routes import register_routes
 from app.seed import seed_admin
 
 
@@ -25,5 +26,6 @@ def create_app() -> Flask:
     with app.app_context():
         db.create_all()
         seed_admin()
+        register_routes(app)
 
     return app

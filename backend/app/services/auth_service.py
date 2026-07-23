@@ -18,7 +18,7 @@ from app.schemas.auth import (
     LoginRequest,
 )
 from app.schemas.response.auth import StudentResponse, CompanyResponse, LoginResponse
-from app.utils import create_access_token_for_user
+from app.utils.jwt_utils import create_access_token_for_user
 
 logger = logging.getLogger(__name__)
 

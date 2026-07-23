@@ -1,14 +1,23 @@
-from sqlalchemy import select
+from sqlalchemy import select, Select, func
 
-from app.enums import UserRole, AccountStatus
+from app.enums import UserRole, AccountStatus, SortDirection, UserSortField
 from app.extensions import db
 from app.models.user import User
 from app.repositories.base_repository import BaseRepository
+from app.schemas.requests.sort_request import UserSortRequest
+from app.schemas.requests.user_filter_request import UserFilterRequest
 
 
 class UserRepository(BaseRepository[User]):
     def __init__(self):
         super().__init__(User)
+
+    _SORT_COLUMNS = {
+        UserSortField.EMAIL: User.email,
+        UserSortField.ROLE: User.role,
+        UserSortField.ACCOUNT_STATUS: User.account_status,
+        UserSortField.CREATED_AT: User.created_at,
+    }
 
     def get_by_email(self, email: str) -> User | None:
         return db.session.scalar(select(User).where(User.email == email))
@@ -29,3 +38,62 @@ class UserRepository(BaseRepository[User]):
         return db.session.scalars(
             select(User).where(User.account_status == status)
         ).all()
+
+    def _apply_filters(
+        self,
+        query: Select,
+        filters: UserFilterRequest,
+    ) -> Select:
+        if filters.role is not None:
+            query = query.where(User.role == filters.role)
+
+        if filters.account_status is not None:
+            query = query.where(User.account_status == filters.account_status)
+
+        if filters.is_active is not None:
+            query = query.where(User.is_active.is_(filters.is_active))
+
+        return query
+
+    def get_page(
+        self,
+        page: int,
+        size: int,
+        filters: UserFilterRequest,
+        sorting: UserSortRequest,
+    ) -> list[User]:
+        offset = (page - 1) * size
+
+        query = select(User)
+        query = self._apply_filters(query, filters)
+        query = self._apply_sorting(
+            query,
+            sorting,
+        )
+
+        # query = query.order_by(User.created_at.desc()).offset(offset).limit(size)
+        query = query.offset(offset).limit(size)
+        return db.session.scalars(query).all()
+
+    def count(
+        self,
+        filters: UserFilterRequest,
+    ) -> int:
+        query = select(func.count()).select_from(User)
+        query = self._apply_filters(query, filters)
+
+        return db.session.scalar(query) or 0
+
+    def _apply_sorting(
+        self,
+        query: Select,
+        sorting: UserSortRequest,
+    ) -> Select:
+        column = self._SORT_COLUMNS[sorting.sort_by]
+
+        if sorting.sort_direction == SortDirection.ASC:
+            query = query.order_by(column.asc())
+        else:
+            query = query.order_by(column.desc())
+
+        return query

@@ -7,6 +7,7 @@ from app.enums.interview_status import InterviewStatus
 from app.enums.notification_type import NotificationType
 from app.enums.placement_drive_status import PlacementDriveStatus
 from app.enums.placement_status import PlacementStatus
+from app.enums.sort_direction import SortDirection
 from app.enums.user_role import UserRole
 
 __all__ = [
@@ -20,4 +21,8 @@ __all__ = [
     "ApplicationStatus",
     "ErrorCode",
     "AccountStatus",
+    "SortDirection",
+    "UserSortField",
 ]
+
+from app.enums.user_sort_field import UserSortField

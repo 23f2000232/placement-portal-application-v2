@@ -9,7 +9,7 @@ from app.schemas.auth import (
     CompanyRegistrationRequest,
     LoginRequest,
 )
-from app.utils import get_current_user_id
+from app.utils.jwt_utils import get_current_user_id
 
 auth_bp = Blueprint(
     "auth",

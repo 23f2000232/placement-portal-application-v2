@@ -43,3 +43,8 @@ class StudentRegistrationRequest(BaseModel):
         ge=0,
         le=10,
     )
+
+    resume_path: str = Field(
+        min_length=1,
+        max_length=100,
+    )

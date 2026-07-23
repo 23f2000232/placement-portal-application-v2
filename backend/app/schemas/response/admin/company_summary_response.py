@@ -1,8 +1,8 @@
 from uuid import UUID
 
+from pydantic import BaseModel
 from pydantic import ConfigDict
 
-from app import BaseModel
 from app.enums import ApprovalStatus
 
 

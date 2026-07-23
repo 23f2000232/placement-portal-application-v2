@@ -4,10 +4,10 @@ from app.enums import ErrorCode
 from app.exceptions.app_exception import AppException
 
 
-class CompanyNotFoundException(AppException):
+class CompanyAlreadyRejectedException(AppException):
     def __init__(self, company_id):
         super().__init__(
-            f"Company {company_id} not found.",
-            ErrorCode.COMPANY_NOT_FOUND,
+            f"Your account with company id {company_id} is  rejected",
+            ErrorCode.ACCOUNT_NOT_APPROVED,
             HTTPStatus.UNAUTHORIZED,
         )
