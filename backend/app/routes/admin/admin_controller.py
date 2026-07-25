@@ -4,9 +4,18 @@ from flask import Blueprint, jsonify, request
 
 from app.dependencies import admin_service
 from app.schemas.common.pagination_request import PaginationRequest
-from app.schemas.requests import UserSearchRequest
+from app.schemas.requests import (
+    UserSearchRequest,
+    StudentSearchRequest,
+    StudentSortRequest,
+    StudentFilterRequest,
+)
+from app.schemas.requests.company_filter_request import CompanyFilterRequest
+from app.schemas.requests.company_search_request import CompanySearchRequest
+from app.schemas.requests.company_sort_request import CompanySortRequest
 from app.schemas.requests.user_filter_request import UserFilterRequest
 from app.schemas.requests.user_sort_request import UserSortRequest
+from app.utils.request_parser import pick
 
 admin_bp = Blueprint(
     "admin",
@@ -110,8 +119,84 @@ def get_users():
     )
 
 
-def pick(
-    data: dict[str, str],
-    *keys: str,
-) -> dict[str, str]:
-    return {key: data[key] for key in keys if key in data}
+@admin_bp.get("/students")
+def get_students():
+    args = request.args.to_dict(flat=True)
+
+    pagination = PaginationRequest.model_validate(
+        pick(args, "page", "size"),
+    )
+
+    filters = StudentFilterRequest.model_validate(
+        pick(
+            args,
+            "approval_status",
+            "branch",
+            "semester",
+        ),
+    )
+
+    sorting = StudentSortRequest.model_validate(
+        pick(
+            args,
+            "sort_by",
+            "sort_direction",
+        ),
+    )
+
+    search = StudentSearchRequest.model_validate(
+        pick(args, "search"),
+    )
+
+    response = admin_service.get_students(
+        pagination=pagination,
+        filters=filters,
+        sorting=sorting,
+        search=search,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
+@admin_bp.get("/companies")
+def get_companies():
+    args = request.args.to_dict(flat=True)
+
+    pagination = PaginationRequest.model_validate(
+        pick(args, "page", "size"),
+    )
+
+    filters = CompanyFilterRequest.model_validate(
+        pick(
+            args,
+            "approval_status",
+            "industry",
+        ),
+    )
+
+    sorting = CompanySortRequest.model_validate(
+        pick(
+            args,
+            "sort_by",
+            "sort_direction",
+        ),
+    )
+
+    search = CompanySearchRequest.model_validate(
+        pick(args, "search"),
+    )
+
+    response = admin_service.get_companies(
+        pagination=pagination,
+        filters=filters,
+        sorting=sorting,
+        search=search,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )

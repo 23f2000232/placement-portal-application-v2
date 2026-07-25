@@ -27,7 +27,16 @@ from app.repositories import (
     PlacementRecordRepository,
 )
 from app.schemas.common.pagination_request import PaginationRequest
-from app.schemas.requests import user_sort_request, user_search_request
+from app.schemas.requests import (
+    user_sort_request,
+    user_search_request,
+    StudentFilterRequest,
+    StudentSortRequest,
+    StudentSearchRequest,
+)
+from app.schemas.requests.company_filter_request import CompanyFilterRequest
+from app.schemas.requests.company_search_request import CompanySearchRequest
+from app.schemas.requests.company_sort_request import CompanySortRequest
 from app.schemas.requests.user_filter_request import UserFilterRequest
 from app.schemas.response.admin import StudentSummaryResponse, CompanySummaryResponse
 from app.schemas.response.admin.user_summary_response import UserSummaryResponse
@@ -243,6 +252,92 @@ class AdminService:
         return build_page_response(
             items=users,
             mapper=UserMapper.to_summary_response,
+            page=pagination.page,
+            size=pagination.size,
+            total_items=total_items,
+        )
+
+    def get_students(
+        self,
+        pagination: PaginationRequest,
+        filters: StudentFilterRequest,
+        sorting: StudentSortRequest,
+        search: StudentSearchRequest,
+    ) -> PageResponse[StudentSummaryResponse]:
+
+        self.logger.info(
+            "Fetching students (page=%d, size=%d)",
+            pagination.page,
+            pagination.size,
+        )
+
+        total_items = self.student_repository.count(
+            filters=filters,
+            search=search,
+        )
+
+        students = self.student_repository.get_page(
+            page=pagination.page,
+            size=pagination.size,
+            filters=filters,
+            sorting=sorting,
+            search=search,
+        )
+
+        self.logger.info(
+            "Fetched %d of %d students (page=%d, size=%d)",
+            len(students),
+            total_items,
+            pagination.page,
+            pagination.size,
+        )
+
+        return build_page_response(
+            items=students,
+            mapper=StudentMapper.to_summary_response,
+            page=pagination.page,
+            size=pagination.size,
+            total_items=total_items,
+        )
+
+    def get_companies(
+        self,
+        pagination: PaginationRequest,
+        filters: CompanyFilterRequest,
+        sorting: CompanySortRequest,
+        search: CompanySearchRequest,
+    ) -> PageResponse[CompanySummaryResponse]:
+
+        self.logger.info(
+            "Fetching companies (page=%d, size=%d)",
+            pagination.page,
+            pagination.size,
+        )
+
+        total_items = self.company_repository.count(
+            filters=filters,
+            search=search,
+        )
+
+        companies = self.company_repository.get_page(
+            page=pagination.page,
+            size=pagination.size,
+            filters=filters,
+            sorting=sorting,
+            search=search,
+        )
+
+        self.logger.info(
+            "Fetched %d of %d companies (page=%d, size=%d)",
+            len(companies),
+            total_items,
+            pagination.page,
+            pagination.size,
+        )
+
+        return build_page_response(
+            items=companies,
+            mapper=CompanyMapper.to_summary_response,
             page=pagination.page,
             size=pagination.size,
             total_items=total_items,
