@@ -1,3 +1,4 @@
+from app.enums import JobType, InterviewMode
 from app.enums.placement_drive_status import PlacementDriveStatus
 from app.extensions import db
 from app.models.base_model import BaseModel
@@ -22,12 +23,18 @@ class PlacementDrive(BaseModel):
         nullable=False,
     )
 
-    location = db.Column(
+    job_location = db.Column(
         db.String(100),
         nullable=False,
     )
 
-    package = db.Column(
+    is_remote = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+    )
+
+    salary_package = db.Column(
         db.Numeric(6, 2),
         nullable=False,
     )
@@ -67,6 +74,23 @@ class PlacementDrive(BaseModel):
         default=PlacementDriveStatus.DRAFT,
     )
 
+    job_type = db.Column(
+        db.Enum(JobType, native_enum=False),
+        nullable=False,
+    )
+    interview_mode = db.Column(
+        db.Enum(
+            InterviewMode,
+            native_enum=False,
+        ),
+        nullable=False,
+    )
+
+    vacancies = db.Column(
+        db.Integer,
+        nullable=False,
+    )
+
     company = db.relationship(
         "Company",
         back_populates="placement_drives",
@@ -76,6 +100,12 @@ class PlacementDrive(BaseModel):
         "Application",
         back_populates="placement_drive",
         cascade="all, delete-orphan",
+    )
+
+    experience_required = db.Column(
+        db.Integer,
+        nullable=False,
+        default=0,
     )
 
     def __repr__(self) -> str:
