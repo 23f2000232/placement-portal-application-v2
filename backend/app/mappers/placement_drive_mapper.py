@@ -1,6 +1,5 @@
-from app.schemas.response.placement_drive import PlacementDriveResponse
-
 from app.models import PlacementDrive
+from app.schemas.response.placement_drive_response import PlacementDriveResponse
 
 
 class PlacementDriveMapper:
