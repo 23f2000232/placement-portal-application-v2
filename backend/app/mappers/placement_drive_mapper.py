@@ -1,5 +1,10 @@
 from app.models import PlacementDrive
-from app.schemas.response.placement_drive_response import PlacementDriveResponse
+from app.schemas.response.placement.placement_drive_response import (
+    PlacementDriveResponse,
+)
+from app.schemas.response.placement.placement_drive_summary_response import (
+    PlacementDriveSummaryResponse,
+)
 
 
 class PlacementDriveMapper:
@@ -28,4 +33,20 @@ class PlacementDriveMapper:
             status=drive.status,
             created_at=drive.created_at,
             updated_at=drive.updated_at,
+        )
+
+    @staticmethod
+    def to_summary_response(
+        drive: PlacementDrive,
+    ) -> PlacementDriveSummaryResponse:
+        return PlacementDriveSummaryResponse(
+            id=drive.id,
+            title=drive.title,
+            job_location=drive.job_location,
+            salary_package=drive.salary_package,
+            job_type=drive.job_type,
+            status=drive.status,
+            application_deadline=drive.application_deadline,
+            vacancies=drive.vacancies,
+            created_at=drive.created_at,
         )
