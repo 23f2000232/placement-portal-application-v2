@@ -2,9 +2,15 @@ import logging
 from uuid import UUID
 
 from app import Student, Application
-from app.enums import ApprovalStatus
+from app.enums import ApprovalStatus, ApplicationStatus
 from app.exceptions.admin import StudentNotFoundException
 from app.exceptions.application.already_applied_exception import AlreadyAppliedException
+from app.exceptions.application.application_not_found_exception import (
+    ApplicationNotFoundException,
+)
+from app.exceptions.application.application_not_withdrawable_exception import (
+    ApplicationNotWithdrawableException,
+)
 from app.exceptions.application.resume_not_uploaded_exception import (
     ResumeNotUploadedException,
 )
@@ -272,3 +278,54 @@ class StudentService:
             size=pagination.size,
             total_items=total_items,
         )
+
+    def withdraw_application(
+        self,
+        student_user_id: UUID,
+        application_id: UUID,
+    ) -> None:
+        self.logger.info(
+            "Student %s withdrawing application %s",
+            student_user_id,
+            application_id,
+        )
+
+        student = self._get_approved_student(
+            student_user_id,
+        )
+
+        application = self.application_repository.get_by_student_and_id(
+            student.id,
+            application_id,
+        )
+
+        if application is None:
+            raise ApplicationNotFoundException(
+                application_id,
+            )
+
+        if application.status not in (
+            ApplicationStatus.APPLIED,
+            ApplicationStatus.UNDER_REVIEW,
+        ):
+            raise ApplicationNotWithdrawableException()
+
+        try:
+            application.status = ApplicationStatus.WITHDRAWN
+
+            self.application_repository.save()
+
+            self.logger.info(
+                "Application %s withdrawn successfully",
+                application.id,
+            )
+
+        except Exception:
+            self.application_repository.rollback()
+
+            self.logger.exception(
+                "Failed to withdraw application %s",
+                application.id,
+            )
+
+            raise

@@ -202,3 +202,15 @@ class ApplicationRepository(BaseRepository[Application]):
         query = query.offset(offset).limit(size)
 
         return db.session.scalars(query).all()
+
+    def get_by_student_and_id(
+        self,
+        student_id: UUID,
+        application_id: UUID,
+    ) -> Application | None:
+        return db.session.scalar(
+            select(Application).where(
+                Application.id == application_id,
+                Application.student_id == student_id,
+            )
+        )

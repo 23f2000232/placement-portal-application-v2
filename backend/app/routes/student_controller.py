@@ -171,3 +171,17 @@ def get_my_applications():
         jsonify(response.model_dump(mode="json")),
         HTTPStatus.OK,
     )
+
+
+@student_bp.delete("/applications/<uuid:application_id>")
+def withdraw_application(
+    application_id: UUID,
+):
+    student_user_id = get_current_user_id()
+
+    student_service.withdraw_application(
+        student_user_id=student_user_id,
+        application_id=application_id,
+    )
+
+    return "", HTTPStatus.NO_CONTENT
