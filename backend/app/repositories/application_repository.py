@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, exists
 
 from app.enums import ApplicationStatus
 from app.extensions import db
@@ -49,3 +49,20 @@ class ApplicationRepository(BaseRepository[Application]):
         return db.session.scalars(
             select(Application).where(Application.status == status)
         ).all()
+
+    def exists_by_student_and_drive(
+        self,
+        student_id: UUID,
+        drive_id: UUID,
+    ) -> bool:
+        return (
+            db.session.scalar(
+                select(
+                    exists().where(
+                        Application.student_id == student_id,
+                        Application.placement_drive_id == drive_id,
+                    )
+                )
+            )
+            or False
+        )

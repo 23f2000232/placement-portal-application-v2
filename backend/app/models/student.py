@@ -54,6 +54,11 @@ class Student(BaseModel):
         db.String(255),
         nullable=True,
     )
+    current_backlogs = db.Column(
+        db.Integer,
+        nullable=False,
+        default=0,
+    )
 
     user = db.relationship(
         "User",

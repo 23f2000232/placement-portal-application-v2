@@ -1,9 +1,15 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from uuid import UUID
 
-from sqlalchemy import select, Select, or_, func
+from sqlalchemy import select, Select, or_, func, exists
 
-from app.enums import PlacementDriveStatus, PlacementDriveSortField, SortDirection
+from app import Company, Student, Application
+from app.enums import (
+    PlacementDriveStatus,
+    PlacementDriveSortField,
+    SortDirection,
+    StudentDriveSortField,
+)
 from app.extensions import db
 from app.models.placement_drive import PlacementDrive
 from app.repositories.base_repository import BaseRepository
@@ -16,9 +22,25 @@ from app.schemas.requests.placement.placement_drive_search_request import (
 from app.schemas.requests.placement.placement_drive_sort_request import (
     PlacementDriveSortRequest,
 )
+from app.schemas.requests.student.student_drive_filter_request import (
+    StudentDriveFilterRequest,
+)
+from app.schemas.requests.student.student_drive_search_request import (
+    StudentDriveSearchRequest,
+)
+from app.schemas.requests.student.student_drive_sort_request import (
+    StudentDriveSortRequest,
+)
 
 
 class PlacementDriveRepository(BaseRepository[PlacementDrive]):
+
+    _STUDENT_SORT_COLUMNS = {
+        StudentDriveSortField.APPLICATION_DEADLINE: PlacementDrive.application_deadline,
+        StudentDriveSortField.SALARY_PACKAGE: PlacementDrive.salary_package,
+        StudentDriveSortField.TITLE: PlacementDrive.title,
+        StudentDriveSortField.COMPANY_NAME: Company.company_name,
+    }
 
     _SORT_COLUMNS = {
         PlacementDriveSortField.TITLE: PlacementDrive.title,
@@ -162,3 +184,177 @@ class PlacementDriveRepository(BaseRepository[PlacementDrive]):
         query = query.offset(offset).limit(size)
 
         return db.session.scalars(query).all()
+
+    def _apply_student_filters(
+        self,
+        query: Select,
+        filters: StudentDriveFilterRequest,
+    ) -> Select:
+        if filters.job_type is not None:
+            query = query.where(
+                PlacementDrive.job_type == filters.job_type,
+            )
+
+        if filters.is_remote is not None:
+            query = query.where(
+                PlacementDrive.is_remote.is_(filters.is_remote),
+            )
+
+        return query
+
+    def _apply_student_sorting(
+        self,
+        query: Select,
+        sorting: StudentDriveSortRequest,
+    ) -> Select:
+        column = self._STUDENT_SORT_COLUMNS[sorting.sort_by]
+
+        if sorting.sort_direction == SortDirection.ASC:
+            query = query.order_by(column.asc())
+        else:
+            query = query.order_by(column.desc())
+
+        return query
+
+    def _apply_student_search(
+        self,
+        query: Select,
+        search: StudentDriveSearchRequest,
+    ) -> Select:
+        if search.search:
+            pattern = f"%{search.search}%"
+
+            query = query.where(
+                or_(
+                    PlacementDrive.title.ilike(pattern),
+                    PlacementDrive.job_location.ilike(pattern),
+                    Company.company_name.ilike(pattern),
+                )
+            )
+
+        return query
+
+    def _build_available_drives_query(
+        self,
+        student: Student,
+        *,
+        exclude_applied: bool = True,
+    ) -> Select:
+        query = select(PlacementDrive).join(Company)
+
+        query = query.where(
+            PlacementDrive.status == PlacementDriveStatus.OPEN,
+            PlacementDrive.application_deadline > datetime.now(UTC),
+            PlacementDrive.minimum_cgpa <= student.cgpa,
+            PlacementDrive.maximum_backlogs >= student.current_backlogs,
+        )
+
+        query = query.where(
+            PlacementDrive.eligible_branches.contains(
+                student.branch,
+            )
+        )
+
+        if exclude_applied:
+            query = query.where(
+                ~exists().where(
+                    Application.student_id == student.id,
+                    Application.placement_drive_id == PlacementDrive.id,
+                )
+            )
+
+        return query
+
+    def count_available_drives(
+        self,
+        student: Student,
+        filters: StudentDriveFilterRequest,
+        search: StudentDriveSearchRequest,
+    ) -> int:
+
+        query = self._build_available_drives_query(
+            student,
+            exclude_applied=True,
+        )
+
+        query = query.with_only_columns(func.count())
+
+        query = self._apply_student_filters(
+            query,
+            filters,
+        )
+
+        query = self._apply_student_search(
+            query,
+            search,
+        )
+
+        return db.session.scalar(query) or 0
+
+    def get_available_drives_page(
+        self,
+        student: Student,
+        page: int,
+        size: int,
+        filters: StudentDriveFilterRequest,
+        sorting: StudentDriveSortRequest,
+        search: StudentDriveSearchRequest,
+    ) -> list[PlacementDrive]:
+
+        offset = (page - 1) * size
+
+        query = self._build_available_drives_query(
+            student,
+            exclude_applied=True,
+        )
+
+        query = self._apply_student_filters(
+            query,
+            filters,
+        )
+
+        query = self._apply_student_search(
+            query,
+            search,
+        )
+
+        query = self._apply_student_sorting(
+            query,
+            sorting,
+        )
+
+        query = query.offset(offset).limit(size)
+
+        return db.session.scalars(query).all()
+
+    def get_available_drive(
+        self,
+        student: Student,
+        drive_id: UUID,
+    ) -> PlacementDrive | None:
+        query = self._build_available_drives_query(
+            student,
+            exclude_applied=True,
+        )
+
+        query = query.where(
+            PlacementDrive.id == drive_id,
+        )
+
+        return db.session.scalar(query)
+
+    def get_drive_for_application(
+        self,
+        student: Student,
+        drive_id: UUID,
+    ) -> PlacementDrive | None:
+        query = self._build_available_drives_query(
+            student,
+            exclude_applied=False,
+        )
+
+        query = query.where(
+            PlacementDrive.id == drive_id,
+        )
+
+        return db.session.scalar(query)
