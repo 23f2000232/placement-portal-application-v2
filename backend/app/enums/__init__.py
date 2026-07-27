@@ -11,6 +11,7 @@ from app.enums.placement_drive_sort_field import PlacementDriveSortField
 from app.enums.placement_drive_status import PlacementDriveStatus
 from app.enums.placement_status import PlacementStatus
 from app.enums.sort_direction import SortDirection
+from app.enums.student_application_sort_field import StudentApplicationSortField
 from app.enums.student_drive_sort_field import StudentDriveSortField
 from app.enums.student_sort_field import StudentSortField
 from app.enums.user_role import UserRole
@@ -33,6 +34,7 @@ __all__ = [
     "JobType",
     "PlacementDriveSortField",
     "StudentDriveSortField",
+    "StudentApplicationSortField",
 ]
 
 from app.enums.user_sort_field import UserSortField

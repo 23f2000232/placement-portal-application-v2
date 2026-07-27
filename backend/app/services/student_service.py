@@ -21,6 +21,15 @@ from app.repositories import (
     ApplicationRepository,
 )
 from app.schemas.common.pagination_request import PaginationRequest
+from app.schemas.requests.student.student_application_filter_request import (
+    StudentApplicationFilterRequest,
+)
+from app.schemas.requests.student.student_application_search_request import (
+    StudentApplicationSearchRequest,
+)
+from app.schemas.requests.student.student_application_sort_request import (
+    StudentApplicationSortRequest,
+)
 from app.schemas.requests.student.student_drive_filter_request import (
     StudentDriveFilterRequest,
 )
@@ -32,6 +41,9 @@ from app.schemas.requests.student.student_drive_sort_request import (
 )
 from app.schemas.response.application.application_response import ApplicationResponse
 from app.schemas.response.common.page_response import PageResponse
+from app.schemas.response.student.student_application_summary_response import (
+    StudentApplicationSummaryResponse,
+)
 from app.schemas.response.student.student_drive_summary_response import (
     StudentDriveSummaryResponse,
 )
@@ -213,3 +225,50 @@ class StudentService:
             )
 
             raise
+
+    def get_my_applications(
+        self,
+        student_user_id: UUID,
+        pagination: PaginationRequest,
+        filters: StudentApplicationFilterRequest,
+        sorting: StudentApplicationSortRequest,
+        search: StudentApplicationSearchRequest,
+    ) -> PageResponse[StudentApplicationSummaryResponse]:
+        self.logger.info(
+            "Fetching student applications (page=%d, size=%d)",
+            pagination.page,
+            pagination.size,
+        )
+
+        student = self._get_approved_student(
+            student_user_id,
+        )
+
+        total_items = self.application_repository.count_student_applications(
+            student=student,
+            filters=filters,
+            search=search,
+        )
+
+        applications = self.application_repository.get_student_applications_page(
+            student=student,
+            page=pagination.page,
+            size=pagination.size,
+            filters=filters,
+            sorting=sorting,
+            search=search,
+        )
+
+        self.logger.info(
+            "Fetched %d of %d applications",
+            len(applications),
+            total_items,
+        )
+
+        return build_page_response(
+            items=applications,
+            mapper=ApplicationMapper.to_student_summary_response,
+            page=pagination.page,
+            size=pagination.size,
+            total_items=total_items,
+        )

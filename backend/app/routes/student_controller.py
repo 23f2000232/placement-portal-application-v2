@@ -5,6 +5,15 @@ from flask import Blueprint, jsonify, request
 
 from app.dependencies import student_service
 from app.schemas.common.pagination_request import PaginationRequest
+from app.schemas.requests.student.student_application_filter_request import (
+    StudentApplicationFilterRequest,
+)
+from app.schemas.requests.student.student_application_search_request import (
+    StudentApplicationSearchRequest,
+)
+from app.schemas.requests.student.student_application_sort_request import (
+    StudentApplicationSortRequest,
+)
 from app.schemas.requests.student.student_drive_filter_request import (
     StudentDriveFilterRequest,
 )
@@ -111,4 +120,54 @@ def apply_to_drive(
     return (
         jsonify(response.model_dump(mode="json")),
         HTTPStatus.CREATED,
+    )
+
+
+@student_bp.get("/applications")
+def get_my_applications():
+    args = request.args.to_dict(flat=True)
+
+    pagination = PaginationRequest.model_validate(
+        {
+            key: args[key]
+            for key in (
+                "page",
+                "size",
+            )
+            if key in args
+        }
+    )
+
+    filters = StudentApplicationFilterRequest.model_validate(
+        {key: args[key] for key in ("status",) if key in args}
+    )
+
+    sorting = StudentApplicationSortRequest.model_validate(
+        {
+            key: args[key]
+            for key in (
+                "sort_by",
+                "sort_direction",
+            )
+            if key in args
+        }
+    )
+
+    search = StudentApplicationSearchRequest.model_validate(
+        {key: args[key] for key in ("search",) if key in args}
+    )
+
+    student_user_id = get_current_user_id()
+
+    response = student_service.get_my_applications(
+        student_user_id=student_user_id,
+        pagination=pagination,
+        filters=filters,
+        sorting=sorting,
+        search=search,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
     )
