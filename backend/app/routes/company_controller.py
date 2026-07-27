@@ -3,8 +3,17 @@ from uuid import UUID
 
 from flask import Blueprint, jsonify, request
 
-from app.dependencies import placement_drive_service
+from app.dependencies import placement_drive_service, company_service
 from app.schemas.common.pagination_request import PaginationRequest
+from app.schemas.requests.company.company_application_filter_request import (
+    CompanyApplicationFilterRequest,
+)
+from app.schemas.requests.company.company_application_search_request import (
+    CompanyApplicationSearchRequest,
+)
+from app.schemas.requests.company.company_application_sort_request import (
+    CompanyApplicationSortRequest,
+)
 from app.schemas.requests.placement.create_placement_drive_request import (
     CreatePlacementDriveRequest,
 )
@@ -180,6 +189,161 @@ def get_company_drives():
         filters=filters,
         sorting=sorting,
         search=search,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
+@company_bp.get("/drives/<uuid:drive_id>/applications")
+def get_drive_applications(
+    drive_id: UUID,
+):
+    args = request.args.to_dict(flat=True)
+
+    pagination = PaginationRequest.model_validate(
+        {
+            key: args[key]
+            for key in (
+                "page",
+                "size",
+            )
+            if key in args
+        }
+    )
+
+    filters = CompanyApplicationFilterRequest.model_validate(
+        {key: args[key] for key in ("status",) if key in args}
+    )
+
+    sorting = CompanyApplicationSortRequest.model_validate(
+        {
+            key: args[key]
+            for key in (
+                "sort_by",
+                "sort_direction",
+            )
+            if key in args
+        }
+    )
+
+    search = CompanyApplicationSearchRequest.model_validate(
+        {key: args[key] for key in ("search",) if key in args}
+    )
+
+    company_user_id = get_current_user_id()
+
+    response = company_service.get_drive_applications(
+        company_user_id=company_user_id,
+        drive_id=drive_id,
+        pagination=pagination,
+        filters=filters,
+        sorting=sorting,
+        search=search,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
+@company_bp.get("/applications/<uuid:application_id>")
+def get_application(
+    application_id: UUID,
+):
+    company_user_id = get_current_user_id()
+
+    response = company_service.get_application(
+        company_user_id=company_user_id,
+        application_id=application_id,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
+@company_bp.patch("/applications/<uuid:application_id>/under-review")
+def mark_under_review(
+    application_id: UUID,
+):
+    company_user_id = get_current_user_id()
+
+    response = company_service.mark_under_review(
+        company_user_id=company_user_id,
+        application_id=application_id,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
+@company_bp.patch("/applications/<uuid:application_id>/shortlist")
+def shortlist_application(
+    application_id: UUID,
+):
+    company_user_id = get_current_user_id()
+
+    response = company_service.shortlist_application(
+        company_user_id=company_user_id,
+        application_id=application_id,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
+@company_bp.patch("/applications/<uuid:application_id>/schedule-interview")
+def schedule_interview(
+    application_id: UUID,
+):
+    company_user_id = get_current_user_id()
+
+    response = company_service.schedule_interview(
+        company_user_id=company_user_id,
+        application_id=application_id,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
+@company_bp.patch("/applications/<uuid:application_id>/select")
+def select_application(
+    application_id: UUID,
+):
+    company_user_id = get_current_user_id()
+
+    response = company_service.select_application(
+        company_user_id=company_user_id,
+        application_id=application_id,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
+@company_bp.patch("/applications/<uuid:application_id>/reject")
+def reject_application(
+    application_id: UUID,
+):
+    company_user_id = get_current_user_id()
+
+    response = company_service.reject_application(
+        company_user_id=company_user_id,
+        application_id=application_id,
     )
 
     return (

@@ -1,6 +1,7 @@
 from app.enums.account_status import AccountStatus
 from app.enums.application_status import ApplicationStatus
 from app.enums.approval_status import ApprovalStatus
+from app.enums.company_application_sort_field import CompanyApplicationSortField
 from app.enums.company_sort_field import CompanySortField
 from app.enums.error_code import ErrorCode
 from app.enums.interview_mode import InterviewMode
@@ -35,6 +36,7 @@ __all__ = [
     "PlacementDriveSortField",
     "StudentDriveSortField",
     "StudentApplicationSortField",
+    "CompanyApplicationSortField",
 ]
 
 from app.enums.user_sort_field import UserSortField

@@ -8,6 +8,7 @@ from app.repositories import (
 )
 from app.services.admin_service import AdminService
 from app.services.auth_service import AuthService
+from app.services.company_service import CompanyService
 from app.services.placement_drive_service import PlacementDriveService
 from app.services.student_service import StudentService
 
@@ -40,3 +41,5 @@ student_service = StudentService(
     company_repository,
     application_repository,
 )
+
+company_service = CompanyService(placement_drive_repository, application_repository)

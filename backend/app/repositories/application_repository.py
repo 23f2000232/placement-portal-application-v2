@@ -3,10 +3,24 @@ from uuid import UUID
 from sqlalchemy import select, exists, func, Select, or_
 
 from app import Company, PlacementDrive, Student
-from app.enums import ApplicationStatus, StudentApplicationSortField, SortDirection
+from app.enums import (
+    ApplicationStatus,
+    StudentApplicationSortField,
+    SortDirection,
+    CompanyApplicationSortField,
+)
 from app.extensions import db
 from app.models.application import Application
 from app.repositories.base_repository import BaseRepository
+from app.schemas.requests.company.company_application_filter_request import (
+    CompanyApplicationFilterRequest,
+)
+from app.schemas.requests.company.company_application_search_request import (
+    CompanyApplicationSearchRequest,
+)
+from app.schemas.requests.company.company_application_sort_request import (
+    CompanyApplicationSortRequest,
+)
 from app.schemas.requests.student.student_application_filter_request import (
     StudentApplicationFilterRequest,
 )
@@ -19,6 +33,14 @@ from app.schemas.requests.student.student_application_sort_request import (
 
 
 class ApplicationRepository(BaseRepository[Application]):
+
+    _COMPANY_SORT_COLUMNS = {
+        CompanyApplicationSortField.APPLIED_AT: Application.created_at,
+        CompanyApplicationSortField.STATUS: Application.status,
+        CompanyApplicationSortField.STUDENT_NAME: Student.full_name,
+        CompanyApplicationSortField.ROLL_NUMBER: Student.roll_number,
+        CompanyApplicationSortField.CGPA: Student.cgpa,
+    }
 
     _STUDENT_SORT_COLUMNS = {
         StudentApplicationSortField.APPLIED_AT: Application.created_at,
@@ -212,5 +234,142 @@ class ApplicationRepository(BaseRepository[Application]):
             select(Application).where(
                 Application.id == application_id,
                 Application.student_id == student_id,
+            )
+        )
+
+    def _apply_company_filters(
+        self,
+        query: Select,
+        filters: CompanyApplicationFilterRequest,
+    ) -> Select:
+        if filters.status is not None:
+            query = query.where(
+                Application.status == filters.status,
+            )
+
+        return query
+
+    def _apply_company_search(
+        self,
+        query: Select,
+        search: CompanyApplicationSearchRequest,
+    ) -> Select:
+        if search.search:
+            pattern = f"%{search.search}%"
+
+            query = query.where(
+                or_(
+                    Student.full_name.ilike(pattern),
+                    Student.roll_number.ilike(pattern),
+                    Student.branch.ilike(pattern),
+                )
+            )
+
+        return query
+
+    def _apply_company_sorting(
+        self,
+        query: Select,
+        sorting: CompanyApplicationSortRequest,
+    ) -> Select:
+        column = self._COMPANY_SORT_COLUMNS[sorting.sort_by]
+
+        if sorting.sort_direction == SortDirection.ASC:
+            query = query.order_by(column.asc())
+        else:
+            query = query.order_by(column.desc())
+
+        return query
+
+    def _build_company_applications_query(
+        self,
+        company_id: UUID,
+        drive_id: UUID,
+    ) -> Select:
+        return (
+            select(Application)
+            .join(Student)
+            .join(PlacementDrive)
+            .where(
+                PlacementDrive.company_id == company_id,
+                PlacementDrive.id == drive_id,
+            )
+        )
+
+    def count_company_drive_applications(
+        self,
+        company_id: UUID,
+        drive_id: UUID,
+        filters: CompanyApplicationFilterRequest,
+        search: CompanyApplicationSearchRequest,
+    ) -> int:
+        query = self._build_company_applications_query(
+            company_id,
+            drive_id,
+        )
+
+        query = query.with_only_columns(
+            func.count(),
+        )
+
+        query = self._apply_company_filters(
+            query,
+            filters,
+        )
+
+        query = self._apply_company_search(
+            query,
+            search,
+        )
+
+        return db.session.scalar(query) or 0
+
+    def get_company_drive_applications_page(
+        self,
+        company_id: UUID,
+        drive_id: UUID,
+        page: int,
+        size: int,
+        filters: CompanyApplicationFilterRequest,
+        sorting: CompanyApplicationSortRequest,
+        search: CompanyApplicationSearchRequest,
+    ) -> list[Application]:
+        offset = (page - 1) * size
+
+        query = self._build_company_applications_query(
+            company_id,
+            drive_id,
+        )
+
+        query = self._apply_company_filters(
+            query,
+            filters,
+        )
+
+        query = self._apply_company_search(
+            query,
+            search,
+        )
+
+        query = self._apply_company_sorting(
+            query,
+            sorting,
+        )
+
+        query = query.offset(offset).limit(size)
+
+        return db.session.scalars(query).all()
+
+    def get_company_application(
+        self,
+        company_id: UUID,
+        application_id: UUID,
+    ) -> Application | None:
+        return db.session.scalar(
+            select(Application)
+            .join(PlacementDrive)
+            .where(
+                Application.id == application_id,
+                PlacementDrive.company_id == company_id,
             )
         )
