@@ -15,3 +15,5 @@ class Config:
     SQLALCHEMY_DATABASE_URI = f"sqlite:///{BASE_DIR / 'instance' / 'placement.db'}"
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    UPLOAD_DIRECTORY = "uploads/resumes"
+    MAX_RESUME_SIZE = 5 * 1024 * 1024

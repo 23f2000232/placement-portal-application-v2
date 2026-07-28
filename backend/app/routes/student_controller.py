@@ -185,3 +185,48 @@ def withdraw_application(
     )
 
     return "", HTTPStatus.NO_CONTENT
+
+
+@student_bp.post("/resume")
+def upload_resume():
+    student_user_id = get_current_user_id()
+
+    file = request.files.get("resume")
+
+    response = student_service.upload_resume(
+        student_user_id=student_user_id,
+        file=file,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.CREATED,
+    )
+
+
+@student_bp.get("/resume")
+def get_resume():
+    student_user_id = get_current_user_id()
+
+    response = student_service.get_resume(
+        student_user_id=student_user_id,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
+@student_bp.delete("/resume")
+def delete_resume():
+    student_user_id = get_current_user_id()
+
+    student_service.delete_resume(
+        student_user_id=student_user_id,
+    )
+
+    return (
+        "",
+        HTTPStatus.NO_CONTENT,
+    )

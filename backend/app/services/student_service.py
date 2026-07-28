@@ -1,6 +1,8 @@
 import logging
 from uuid import UUID
 
+from werkzeug.datastructures import FileStorage
+
 from app import Student, Application
 from app.enums import ApprovalStatus, ApplicationStatus
 from app.exceptions.admin import StudentNotFoundException
@@ -10,6 +12,10 @@ from app.exceptions.application.application_not_found_exception import (
 )
 from app.exceptions.application.application_not_withdrawable_exception import (
     ApplicationNotWithdrawableException,
+)
+from app.exceptions.application.invalid_resume_exception import InvalidResumeException
+from app.exceptions.application.resume_not_found_exception import (
+    ResumeNotFoundException,
 )
 from app.exceptions.application.resume_not_uploaded_exception import (
     ResumeNotUploadedException,
@@ -47,6 +53,7 @@ from app.schemas.requests.student.student_drive_sort_request import (
 )
 from app.schemas.response.application.application_response import ApplicationResponse
 from app.schemas.response.common.page_response import PageResponse
+from app.schemas.response.student.resume_response import ResumeResponse
 from app.schemas.response.student.student_application_summary_response import (
     StudentApplicationSummaryResponse,
 )
@@ -56,6 +63,7 @@ from app.schemas.response.student.student_drive_summary_response import (
 from app.schemas.response.student.student_placement_drive_response import (
     StudentPlacementDriveResponse,
 )
+from app.services.storage.storage_service import StorageService
 from app.utils.page_builder import build_page_response
 
 
@@ -67,7 +75,9 @@ class StudentService:
         placement_drive_repository: PlacementDriveRepository,
         company_repository: CompanyRepository,
         application_repository: ApplicationRepository,
+        storage_service: StorageService,
     ):
+        self.storage_service = storage_service
         self.logger = logging.getLogger(__name__)
         self.student_repository = student_repository
         self.placement_drive_repository = placement_drive_repository
@@ -326,6 +336,126 @@ class StudentService:
             self.logger.exception(
                 "Failed to withdraw application %s",
                 application.id,
+            )
+
+            raise
+
+    def upload_resume(
+        self,
+        student_user_id: UUID,
+        file: FileStorage,
+    ) -> ResumeResponse:
+        self.logger.info(
+            "Uploading resume for student %s",
+            student_user_id,
+        )
+
+        student = self._get_approved_student(
+            student_user_id,
+        )
+
+        if file is None or file.filename is None or file.filename == "":
+            raise InvalidResumeException()
+
+        if not file.filename.lower().endswith(".pdf"):
+            raise InvalidResumeException()
+
+        try:
+            if student.resume_path is not None:
+                self.storage_service.delete_resume(
+                    student.resume_path,
+                )
+
+            resume_path = self.storage_service.upload_resume(
+                student_id=str(student.id),
+                file=file,
+            )
+
+            student.resume_path = resume_path
+
+            self.student_repository.save()
+
+            self.logger.info(
+                "Resume uploaded successfully for student %s",
+                student.id,
+            )
+
+            return ResumeResponse(
+                resume_path=resume_path,
+                uploaded_at=student.updated_at,
+            )
+
+        except Exception:
+            self.student_repository.rollback()
+
+            self.logger.exception(
+                "Failed to upload resume for student %s",
+                student.id,
+            )
+
+            raise
+
+    def get_resume(
+        self,
+        student_user_id: UUID,
+    ) -> ResumeResponse:
+
+        self.logger.info(
+            "Fetching resume for student %s",
+            student_user_id,
+        )
+
+        student = self._get_approved_student(
+            student_user_id,
+        )
+
+        if student.resume_path is None:
+            raise ResumeNotFoundException()
+
+        return ResumeResponse(
+            resume_path=self.storage_service.get_resume_path(
+                student.resume_path,
+            ),
+            uploaded_at=student.updated_at,
+        )
+
+    def delete_resume(
+        self,
+        student_user_id: UUID,
+    ) -> None:
+
+        self.logger.info(
+            "Deleting resume for student %s",
+            student_user_id,
+        )
+
+        student = self._get_approved_student(
+            student_user_id,
+        )
+
+        if student.resume_path is None:
+            raise ResumeNotFoundException()
+
+        try:
+            self.storage_service.delete_resume(
+                student.resume_path,
+            )
+
+            student.resume_path = None
+
+            self.student_repository.save()
+
+            self.logger.info(
+                "Resume deleted successfully for student %s",
+                student.id,
+            )
+
+        except Exception:
+            self.student_repository.rollback()
+
+            self.logger.exception(
+                "Failed to delete resume for student %s",
+                student.id,
             )
 
             raise
