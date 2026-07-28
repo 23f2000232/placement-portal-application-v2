@@ -196,6 +196,10 @@ class AuthService:
                     or company.approval_status != ApprovalStatus.APPROVED
                 ):
                     raise AccountNotApprovedException()
+            case UserRole.ADMIN:
+                admin = self.user_repository.get_by_id(user.id)
+                if admin is None:
+                    raise AccountNotApprovedException()
             case _:
                 raise InvalidCredentialsException()
 

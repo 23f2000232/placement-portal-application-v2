@@ -45,4 +45,6 @@ student_service = StudentService(
     storage_service,
 )
 
-company_service = CompanyService(placement_drive_repository, application_repository)
+company_service = CompanyService(
+    company_repository, placement_drive_repository, application_repository
+)

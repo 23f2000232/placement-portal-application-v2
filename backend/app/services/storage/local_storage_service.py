@@ -8,23 +8,22 @@ from app.services.storage.storage_service import StorageService
 
 class LocalStorageService(StorageService):
 
-    UPLOAD_DIRECTORY = Path(current_app.config["UPLOAD_DIRECTORY"])
-
-    def __init__(self):
-        self.UPLOAD_DIRECTORY.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
-
     def upload_resume(
         self,
         student_id: str,
         file: FileStorage,
     ) -> str:
 
+        upload_directory = Path(current_app.config["UPLOAD_DIRECTORY"])
+
+        upload_directory.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
         filename = f"{student_id}.pdf"
 
-        destination = self.UPLOAD_DIRECTORY / filename
+        destination = upload_directory / filename
 
         file.save(destination)
 
