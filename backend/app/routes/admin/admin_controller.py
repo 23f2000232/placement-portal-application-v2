@@ -2,6 +2,7 @@ from uuid import UUID
 
 from flask import Blueprint, jsonify, request
 
+from app.decorators.role_decorators import admin_required
 from app.dependencies import admin_service
 from app.schemas.common.pagination_request import PaginationRequest
 from app.schemas.requests import (
@@ -27,6 +28,7 @@ from http import HTTPStatus
 
 
 @admin_bp.get("/students/pending")
+@admin_required
 def get_pending_students():
     response = admin_service.get_pending_students()
 
@@ -37,6 +39,7 @@ def get_pending_students():
 
 
 @admin_bp.patch("/students/<uuid:student_id>/approve")
+@admin_required
 def approve_student(student_id):
     response = admin_service.approve_student(student_id)
 
@@ -47,6 +50,7 @@ def approve_student(student_id):
 
 
 @admin_bp.patch("/students/<uuid:student_id>/reject")
+@admin_required
 def reject_student(student_id):
     response = admin_service.reject_student(student_id)
 
@@ -57,6 +61,7 @@ def reject_student(student_id):
 
 
 @admin_bp.get("/companies/pending")
+@admin_required
 def get_pending_companies():
     response = admin_service.get_pending_companies()
 
@@ -64,6 +69,7 @@ def get_pending_companies():
 
 
 @admin_bp.patch("/companies/<uuid:company_id>/approve")
+@admin_required
 def approve_company(company_id: UUID):
     response = admin_service.approve_company(company_id)
 
@@ -71,6 +77,7 @@ def approve_company(company_id: UUID):
 
 
 @admin_bp.patch("/companies/<uuid:company_id>/reject")
+@admin_required
 def reject_company(company_id: UUID):
     response = admin_service.reject_company(company_id)
 
@@ -78,6 +85,7 @@ def reject_company(company_id: UUID):
 
 
 @admin_bp.get("/users")
+@admin_required
 def get_users():
     args = request.args.to_dict(flat=True)
 
@@ -120,6 +128,7 @@ def get_users():
 
 
 @admin_bp.get("/students")
+@admin_required
 def get_students():
     args = request.args.to_dict(flat=True)
 
@@ -162,6 +171,7 @@ def get_students():
 
 
 @admin_bp.get("/companies")
+@admin_required
 def get_companies():
     args = request.args.to_dict(flat=True)
 

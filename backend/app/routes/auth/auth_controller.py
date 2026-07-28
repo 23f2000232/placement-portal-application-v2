@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
 from flask import jsonify, request, Blueprint
-from flask_jwt_extended import jwt_required
 
+from app.decorators.role_decorators import authenticated_required
 from app.dependencies import auth_service
 from app.schemas.auth import (
     StudentRegistrationRequest,
@@ -56,7 +56,7 @@ def login():
 
 
 @auth_bp.get("/me")
-@jwt_required()
+@authenticated_required
 def get_current_user():
     user_id = get_current_user_id()
 

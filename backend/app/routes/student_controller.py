@@ -3,6 +3,7 @@ from uuid import UUID
 
 from flask import Blueprint, jsonify, request
 
+from app.decorators.role_decorators import student_required
 from app.dependencies import student_service
 from app.schemas.common.pagination_request import PaginationRequest
 from app.schemas.requests.student.student_application_filter_request import (
@@ -33,6 +34,7 @@ student_bp = Blueprint(
 
 
 @student_bp.get("/drives")
+@student_required
 def get_available_drives():
     args = request.args.to_dict(flat=True)
 
@@ -90,6 +92,7 @@ def get_available_drives():
 
 
 @student_bp.get("/drives/<uuid:drive_id>")
+@student_required
 def get_available_drive(
     drive_id: UUID,
 ):
@@ -107,6 +110,7 @@ def get_available_drive(
 
 
 @student_bp.post("/drives/<uuid:drive_id>/apply")
+@student_required
 def apply_to_drive(
     drive_id: UUID,
 ):
@@ -124,6 +128,7 @@ def apply_to_drive(
 
 
 @student_bp.get("/applications")
+@student_required
 def get_my_applications():
     args = request.args.to_dict(flat=True)
 
@@ -174,6 +179,7 @@ def get_my_applications():
 
 
 @student_bp.delete("/applications/<uuid:application_id>")
+@student_required
 def withdraw_application(
     application_id: UUID,
 ):
@@ -188,6 +194,7 @@ def withdraw_application(
 
 
 @student_bp.post("/resume")
+@student_required
 def upload_resume():
     student_user_id = get_current_user_id()
 
@@ -205,6 +212,7 @@ def upload_resume():
 
 
 @student_bp.get("/resume")
+@student_required
 def get_resume():
     student_user_id = get_current_user_id()
 
@@ -219,6 +227,7 @@ def get_resume():
 
 
 @student_bp.delete("/resume")
+@student_required
 def delete_resume():
     student_user_id = get_current_user_id()
 

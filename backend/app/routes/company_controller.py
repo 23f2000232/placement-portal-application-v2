@@ -3,6 +3,7 @@ from uuid import UUID
 
 from flask import Blueprint, jsonify, request
 
+from app.decorators.role_decorators import company_required
 from app.dependencies import placement_drive_service, company_service
 from app.schemas.common.pagination_request import PaginationRequest
 from app.schemas.requests.company.company_application_filter_request import (
@@ -39,6 +40,7 @@ company_bp = Blueprint(
 
 
 @company_bp.post("/drives")
+@company_required
 def create_drive():
     company_user_id = get_current_user_id()
 
@@ -60,6 +62,7 @@ def create_drive():
 
 
 @company_bp.put("/drives/<uuid:drive_id>")
+@company_required
 def update_drive(drive_id: UUID):
     company_user_id = get_current_user_id()
 
@@ -80,6 +83,7 @@ def update_drive(drive_id: UUID):
 
 
 @company_bp.patch("/drives/<uuid:drive_id>/open")
+@company_required
 def open_drive(drive_id: UUID):
     company_user_id = get_current_user_id()
 
@@ -95,6 +99,7 @@ def open_drive(drive_id: UUID):
 
 
 @company_bp.patch("/drives/<uuid:drive_id>/close")
+@company_required
 def close_drive(drive_id: UUID):
     company_user_id = get_current_user_id()
 
@@ -110,6 +115,7 @@ def close_drive(drive_id: UUID):
 
 
 @company_bp.patch("/drives/<uuid:drive_id>/cancel")
+@company_required
 def cancel_drive(drive_id: UUID):
     company_user_id = get_current_user_id()
 
@@ -125,6 +131,7 @@ def cancel_drive(drive_id: UUID):
 
 
 @company_bp.delete("/drives/<uuid:drive_id>")
+@company_required
 def delete_drive(drive_id: UUID):
     company_user_id = get_current_user_id()
 
@@ -140,6 +147,7 @@ def delete_drive(drive_id: UUID):
 
 
 @company_bp.get("/drives")
+@company_required
 def get_company_drives():
     args = request.args.to_dict(flat=True)
 
@@ -198,6 +206,7 @@ def get_company_drives():
 
 
 @company_bp.get("/drives/<uuid:drive_id>/applications")
+@company_required
 def get_drive_applications(
     drive_id: UUID,
 ):
@@ -251,6 +260,7 @@ def get_drive_applications(
 
 
 @company_bp.get("/applications/<uuid:application_id>")
+@company_required
 def get_application(
     application_id: UUID,
 ):
@@ -268,6 +278,7 @@ def get_application(
 
 
 @company_bp.patch("/applications/<uuid:application_id>/under-review")
+@company_required
 def mark_under_review(
     application_id: UUID,
 ):
@@ -285,6 +296,7 @@ def mark_under_review(
 
 
 @company_bp.patch("/applications/<uuid:application_id>/shortlist")
+@company_required
 def shortlist_application(
     application_id: UUID,
 ):
@@ -302,6 +314,7 @@ def shortlist_application(
 
 
 @company_bp.patch("/applications/<uuid:application_id>/schedule-interview")
+@company_required
 def schedule_interview(
     application_id: UUID,
 ):
@@ -319,6 +332,7 @@ def schedule_interview(
 
 
 @company_bp.patch("/applications/<uuid:application_id>/select")
+@company_required
 def select_application(
     application_id: UUID,
 ):
@@ -336,6 +350,7 @@ def select_application(
 
 
 @company_bp.patch("/applications/<uuid:application_id>/reject")
+@company_required
 def reject_application(
     application_id: UUID,
 ):
