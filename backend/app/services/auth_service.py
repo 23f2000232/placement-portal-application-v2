@@ -1,6 +1,8 @@
 import logging
 from uuid import UUID
 
+from flask import current_app
+
 from app.enums import UserRole, ApprovalStatus, AccountStatus
 from app.exceptions.auth import (
     EmailAlreadyExistsException,
@@ -136,9 +138,12 @@ class AuthService:
 
         token = create_access_token_for_user(user)
         logger.info("User logged in successfully: email=%s", request.email)
+        expires_in = int(current_app.config["JWT_ACCESS_TOKEN_EXPIRES"].total_seconds())
 
         return LoginResponse(
             access_token=token,
+            token_type="Bearer",
+            expires_in=expires_in,
         )
 
     def _validate_credentials(
