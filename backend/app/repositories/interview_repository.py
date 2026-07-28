@@ -1,7 +1,8 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, exists, func
 
+from app import Application, PlacementDrive
 from app.enums import InterviewStatus
 from app.extensions import db
 from app.models.interview import Interview
@@ -17,7 +18,11 @@ class InterviewRepository(BaseRepository[Interview]):
         application_id: UUID,
     ) -> list[Interview]:
         return db.session.scalars(
-            select(Interview).where(Interview.application_id == application_id)
+            select(Interview)
+            .where(Interview.application_id == application_id)
+            .order_by(
+                Interview.round_number.asc(),
+            )
         ).all()
 
     def get_by_status(
@@ -38,4 +43,70 @@ class InterviewRepository(BaseRepository[Interview]):
                 Interview.application_id == application_id,
                 Interview.round_number == round_number,
             )
+        )
+
+    def exists_round(
+        self,
+        application_id: UUID,
+        round_number: int,
+    ) -> bool:
+        query = select(
+            exists().where(
+                Interview.application_id == application_id,
+                Interview.round_number == round_number,
+            )
+        )
+
+        return bool(db.session.scalar(query))
+
+    def get_upcoming_student_interviews(
+        self,
+        student_id: UUID,
+    ) -> list[Interview]:
+        return db.session.scalars(
+            select(Interview)
+            .join(
+                Interview.application,
+            )
+            .where(
+                Application.student_id == student_id,
+                Interview.status == InterviewStatus.SCHEDULED,
+                Interview.scheduled_for >= func.now(),
+            )
+            .order_by(
+                Interview.scheduled_for.asc(),
+            )
+        ).all()
+
+    def get_upcoming_company_interviews(
+        self,
+        company_id: UUID,
+    ) -> list[Interview]:
+        return db.session.scalars(
+            select(Interview)
+            .join(Interview.application)
+            .join(Application.placement_drive)
+            .where(
+                PlacementDrive.company_id == company_id,
+                Interview.status == InterviewStatus.SCHEDULED,
+                Interview.scheduled_for >= func.now(),
+            )
+            .order_by(
+                Interview.scheduled_for.asc(),
+            )
+        ).all()
+
+    def get_latest_by_application(
+        self,
+        application_id: UUID,
+    ) -> Interview | None:
+        return db.session.scalar(
+            select(Interview)
+            .where(
+                Interview.application_id == application_id,
+            )
+            .order_by(
+                Interview.round_number.desc(),
+            )
+            .limit(1)
         )

@@ -52,6 +52,15 @@ class Interview(BaseModel):
         db.Text,
         nullable=True,
     )
+    meeting_link = db.Column(
+        db.String(500),
+        nullable=True,
+    )
+
+    location = db.Column(
+        db.String(255),
+        nullable=True,
+    )
 
     status = db.Column(
         db.Enum(

@@ -5,7 +5,9 @@ from app.repositories import (
     application_repository,
     placement_record_repository,
     PlacementDriveRepository,
+    InterviewRepository,
 )
+from app.services import interview_service
 from app.services.admin_service import AdminService
 from app.services.auth_service import AuthService
 from app.services.company_service import CompanyService
@@ -20,6 +22,7 @@ placement_drive_repository = PlacementDriveRepository()
 application_repository = application_repository.ApplicationRepository()
 placement_record_repository = placement_record_repository.PlacementRecordRepository()
 storage_service = LocalStorageService()
+interview_repository = InterviewRepository()
 
 auth_service = AuthService(user_repository, student_repository, company_repository)
 
@@ -47,4 +50,12 @@ student_service = StudentService(
 
 company_service = CompanyService(
     company_repository, placement_drive_repository, application_repository
+)
+
+interview_service = interview_service.InterviewService(
+    interview_repository,
+    application_repository,
+    placement_drive_repository,
+    student_repository,
+    company_repository,
 )
