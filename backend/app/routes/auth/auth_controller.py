@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from flask import jsonify, request, Blueprint
+from flask_jwt_extended import jwt_required
 
 from app.decorators.role_decorators import authenticated_required
 from app.dependencies import auth_service
@@ -61,6 +62,21 @@ def get_current_user():
     user_id = get_current_user_id()
 
     response = auth_service.get_current_user(user_id)
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
+@auth_bp.post("/refresh")
+@jwt_required(refresh=True)
+def refresh_access_token():
+    user_id = get_current_user_id()
+
+    response = auth_service.refresh_access_token(
+        user_id=user_id,
+    )
 
     return (
         jsonify(response.model_dump(mode="json")),

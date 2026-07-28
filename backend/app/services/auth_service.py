@@ -20,12 +20,16 @@ from app.schemas.auth import (
     LoginRequest,
 )
 from app.schemas.response.auth import StudentResponse, CompanyResponse, LoginResponse
-from app.utils.jwt_utils import create_access_token_for_user
-
-logger = logging.getLogger(__name__)
+from app.schemas.response.auth.refresh_token_response import RefreshTokenResponse
+from app.utils.jwt_utils import (
+    create_access_token_for_user,
+    create_refresh_token_for_user,
+)
 
 
 class AuthService:
+    logger = logging.getLogger(__name__)
+
     def __init__(
         self,
         user_repository: UserRepository,
@@ -41,13 +45,13 @@ class AuthService:
         request: StudentRegistrationRequest,
     ) -> StudentResponse:
         if self.user_repository.exists_by_email(request.email):
-            logger.warning(
+            self.logger.warning(
                 "Student registration attempted with existing email=%s",
                 request.email,
             )
             raise EmailAlreadyExistsException()
 
-        logger.info("Registering student with email=%s", request.email)
+        self.logger.info("Registering student with email=%s", request.email)
 
         user = User(
             role=UserRole.STUDENT,
@@ -72,7 +76,7 @@ class AuthService:
             self.student_repository.create(student)
             self.user_repository.save()
         except Exception:
-            logger.exception(
+            self.logger.exception(
                 "Failed to register student with email=%s",
                 request.email,
             )
@@ -85,7 +89,7 @@ class AuthService:
         request: CompanyRegistrationRequest,
     ) -> CompanyResponse:
         if self.user_repository.exists_by_email(request.email):
-            logger.warning(
+            self.logger.warning(
                 "Company registration attempted with existing email=%s",
                 request.email,
             )
@@ -116,7 +120,7 @@ class AuthService:
             self.user_repository.save()
 
         except Exception:
-            logger.exception(
+            self.logger.exception(
                 "Failed to register company with email=%s",
                 request.email,
             )
@@ -129,19 +133,22 @@ class AuthService:
         self,
         request: LoginRequest,
     ) -> LoginResponse:
-        logger.info("Login attempt for email=%s", request.email)
+        self.logger.info("Login attempt for email=%s", request.email)
         user = self.user_repository.get_by_email(request.email)
         user = self._validate_credentials(user, request)
         self._ensure_account_active(user)
         self._ensure_account_not_blacklisted(user)
         self._ensure_account_approved(user)
 
-        token = create_access_token_for_user(user)
-        logger.info("User logged in successfully: email=%s", request.email)
+        access_token = create_access_token_for_user(user)
+
+        refresh_token = create_refresh_token_for_user(user)
+        self.logger.info("User logged in successfully: email=%s", request.email)
         expires_in = int(current_app.config["JWT_ACCESS_TOKEN_EXPIRES"].total_seconds())
 
         return LoginResponse(
-            access_token=token,
+            access_token=access_token,
+            refresh_token=refresh_token,
             token_type="Bearer",
             expires_in=expires_in,
         )
@@ -152,11 +159,13 @@ class AuthService:
         request: LoginRequest,
     ) -> User:
         if user is None:
-            logger.warning("Login failed: unknown email=%s", request.email)
+            self.logger.warning("Login failed: unknown email=%s", request.email)
             raise InvalidCredentialsException()
 
         if not user.check_password(request.password):
-            logger.warning("Login failed: invalid password for email=%s", request.email)
+            self.logger.warning(
+                "Login failed: invalid password for email=%s", request.email
+            )
             raise InvalidCredentialsException()
         return user
 
@@ -218,3 +227,44 @@ class AuthService:
 
             case _:
                 raise InvalidCredentialsException()
+
+    def refresh_access_token(
+        self,
+        user_id: UUID,
+    ) -> RefreshTokenResponse:
+
+        self.logger.info(
+            "Refreshing access token for user %s",
+            user_id,
+        )
+
+        user = self.user_repository.get_by_id(
+            user_id,
+        )
+
+        if user is None:
+            raise InvalidCredentialsException()
+
+        self._ensure_account_active(
+            user,
+        )
+
+        self._ensure_account_not_blacklisted(
+            user,
+        )
+
+        self._ensure_account_approved(
+            user,
+        )
+
+        access_token = create_access_token_for_user(
+            user,
+        )
+
+        return RefreshTokenResponse(
+            access_token=access_token,
+            token_type="Bearer",
+            expires_in=int(
+                current_app.config["JWT_ACCESS_TOKEN_EXPIRES"].total_seconds()
+            ),
+        )

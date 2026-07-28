@@ -1,13 +1,14 @@
 from pydantic import BaseModel, ConfigDict
 
 
-class LoginResponse(BaseModel):
+class RefreshTokenResponse(BaseModel):
     model_config = ConfigDict(
         frozen=True,
         extra="forbid",
     )
 
     access_token: str
-    refresh_token: str
+
     token_type: str
+
     expires_in: int
