@@ -1,5 +1,13 @@
 <template>
-  <h1>Login Page</h1>
+  <AuthLayout>
+    <AuthCard>
+      <LoginForm />
+    </AuthCard>
+  </AuthLayout>
 </template>
 
-<script setup></script>
+<script setup>
+import AuthCard from '@/components/auth/AuthCard.vue'
+import AuthLayout from '@/layouts/AuthLayout.vue'
+import LoginForm from '@/components/auth/LoginForm.vue'
+</script>

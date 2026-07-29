@@ -7,15 +7,27 @@ export default [
     path: '/admin/dashboard',
     name: 'admin-dashboard',
     component: AdminDashboardView,
+    meta: {
+      requiresAuth: true,
+      role: 'ADMIN',
+    },
   },
   {
     path: '/admin/students',
     name: 'student-approval',
     component: StudentApprovalView,
+    meta: {
+      requiresAuth: true,
+      role: 'ADMIN',
+    },
   },
   {
     path: '/admin/companies',
     name: 'company-approval',
     component: CompanyApprovalView,
+    meta: {
+      requiresAuth: true,
+      role: 'ADMIN',
+    },
   },
 ]

@@ -9,25 +9,45 @@ export default [
     path: '/student/dashboard',
     name: 'student-dashboard',
     component: StudentDashboardView,
+    meta: {
+      requiresAuth: true,
+      role: 'STUDENT',
+    },
   },
   {
     path: '/student/drives',
     name: 'student-drives',
     component: StudentDrivesView,
+    meta: {
+      requiresAuth: true,
+      role: 'STUDENT',
+    },
   },
   {
     path: '/student/applications',
     name: 'student-applications',
     component: StudentApplicationsView,
+    meta: {
+      requiresAuth: true,
+      role: 'STUDENT',
+    },
   },
   {
     path: '/student/resume',
     name: 'student-resume',
     component: StudentResumeView,
+    meta: {
+      requiresAuth: true,
+      role: 'STUDENT',
+    },
   },
   {
     path: '/student/interviews',
     name: 'student-interviews',
     component: StudentInterviewsView,
+    meta: {
+      requiresAuth: true,
+      role: 'STUDENT',
+    },
   },
 ]

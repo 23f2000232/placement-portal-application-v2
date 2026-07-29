@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.enums import ApprovalStatus
+from app.enums import ApprovalStatus, UserRole
 
 
 class CompanyResponse(BaseModel):
@@ -19,3 +19,4 @@ class CompanyResponse(BaseModel):
     contact_person: str
     contact_email: str
     approval_status: ApprovalStatus
+    role: UserRole

@@ -20,6 +20,7 @@ from app.schemas.auth import (
     LoginRequest,
 )
 from app.schemas.response.auth import StudentResponse, CompanyResponse, LoginResponse
+from app.schemas.response.auth.admin_response import AdminResponse
 from app.schemas.response.auth.refresh_token_response import RefreshTokenResponse
 from app.utils.jwt_utils import (
     create_access_token_for_user,
@@ -206,7 +207,7 @@ class AuthService:
     def get_current_user(
         self,
         user_id: UUID,
-    ) -> StudentResponse | CompanyResponse:
+    ) -> StudentResponse | CompanyResponse | AdminResponse:
         user = self.user_repository.get_by_id(user_id)
 
         if user is None:
@@ -229,6 +230,15 @@ class AuthService:
 
                 return CompanyMapper.to_response(company)
 
+            case UserRole.ADMIN:
+                admin = self.user_repository.get_by_id(user.id)
+                if admin is None:
+                    raise InvalidCredentialsException()
+                return AdminResponse(
+                    id=user.id,
+                    email=user.email,
+                    role=user.role,
+                )
             case _:
                 raise InvalidCredentialsException()
 

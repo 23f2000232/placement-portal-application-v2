@@ -8,20 +8,36 @@ export default [
     path: '/company/dashboard',
     name: 'company-dashboard',
     component: CompanyDashboardView,
+    meta: {
+      requiresAuth: true,
+      role: 'COMPANY',
+    },
   },
   {
     path: '/company/drives',
     name: 'company-drives',
     component: CompanyDrivesView,
+    meta: {
+      requiresAuth: true,
+      role: 'COMPANY',
+    },
   },
   {
     path: '/company/applications',
     name: 'company-applications',
     component: CompanyApplicationsView,
+    meta: {
+      requiresAuth: true,
+      role: 'COMPANY',
+    },
   },
   {
     path: '/company/interviews',
     name: 'company-interviews',
     component: CompanyInterviewsView,
+    meta: {
+      requiresAuth: true,
+      role: 'COMPANY',
+    },
   },
 ]

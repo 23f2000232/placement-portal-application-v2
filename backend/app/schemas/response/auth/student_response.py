@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.enums import ApprovalStatus
+from app.enums import ApprovalStatus, UserRole
 
 
 class StudentResponse(BaseModel):
@@ -19,3 +19,4 @@ class StudentResponse(BaseModel):
     semester: int
     cgpa: float
     approval_status: ApprovalStatus
+    role: UserRole

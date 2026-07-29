@@ -1,3 +1,4 @@
+from app.enums import UserRole
 from app.models.company import Company
 from app.schemas.response.auth.company_response import CompanyResponse
 
@@ -15,4 +16,5 @@ class CompanyMapper:
             contact_person=company.contact_person,
             contact_email=company.contact_email,
             approval_status=company.approval_status,
+            role=UserRole.COMPANY,
         )

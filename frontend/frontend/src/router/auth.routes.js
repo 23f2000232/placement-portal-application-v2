@@ -11,15 +11,24 @@ export default [
     path: '/login',
     name: 'login',
     component: LoginView,
+    meta: {
+      guest: true,
+    },
   },
   {
     path: '/register/student',
     name: 'student-register',
     component: StudentRegisterView,
+    meta: {
+      guest: true,
+    },
   },
   {
     path: '/register/company',
     name: 'company-register',
     component: CompanyRegisterView,
+    meta: {
+      guest: true,
+    },
   },
 ]
