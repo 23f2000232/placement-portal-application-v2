@@ -1,5 +1,9 @@
 <template>
-  <h1>Student dashboard view</h1>
+  <AppLayout>
+    <h1>Student Dashboard</h1>
+  </AppLayout>
 </template>
 
-<script setup></script>
+<script setup>
+import AppLayout from '@/layouts/AppLayout.vue'
+</script>
