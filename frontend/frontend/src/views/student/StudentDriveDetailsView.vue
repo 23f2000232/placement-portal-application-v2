@@ -1,10 +1,9 @@
 <template>
   <AppLayout>
-    <DriveList />
+    <h2>Placement Drive Details</h2>
   </AppLayout>
 </template>
 
 <script setup>
 import AppLayout from '@/layouts/AppLayout.vue'
-import DriveList from '@/components/student/DriveList.vue'
 </script>

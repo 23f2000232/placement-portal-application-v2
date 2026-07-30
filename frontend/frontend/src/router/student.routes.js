@@ -3,6 +3,7 @@ import StudentDrivesView from '@/views/student/StudentDrivesView.vue'
 import StudentApplicationsView from '@/views/student/StudentApplicationsView.vue'
 import StudentResumeView from '@/views/student/StudentResumeView.vue'
 import StudentInterviewsView from '@/views/student/StudentInterviewsView.vue'
+import StudentDriveDetailsView from '@/views/student/StudentDriveDetailsView.vue'
 
 export default [
   {
@@ -45,6 +46,15 @@ export default [
     path: '/student/interviews',
     name: 'student-interviews',
     component: StudentInterviewsView,
+    meta: {
+      requiresAuth: true,
+      role: 'STUDENT',
+    },
+  },
+  {
+    path: '/student/drives/:driveId',
+    name: 'student-drive-details',
+    component: StudentDriveDetailsView,
     meta: {
       requiresAuth: true,
       role: 'STUDENT',
