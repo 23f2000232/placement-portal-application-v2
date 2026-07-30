@@ -11,6 +11,11 @@ class PlacementDriveService {
 
     return response.data
   }
+  async getStudentPlacementDrive(driveId) {
+    const response = await apiClient.get(`/student/drives/${driveId}`)
+
+    return response.data
+  }
 }
 
 export default new PlacementDriveService()
