@@ -1,5 +1,5 @@
 import CompanyDashboardView from '@/views/company/CompanyDashboardView.vue'
-import CompanyDrivesView from '@/views/company/CompanyDrivesView.vue'
+import CompanyPlacementDrivesView from '@/views/company/CompanyPlacementDrivesView.vue'
 import CompanyApplicationsView from '@/views/company/CompanyApplicationsView.vue'
 import CompanyInterviewsView from '@/views/company/CompanyInterviewsView.vue'
 
@@ -16,7 +16,7 @@ export default [
   {
     path: '/company/drives',
     name: 'company-drives',
-    component: CompanyDrivesView,
+    component: CompanyPlacementDrivesView,
     meta: {
       requiresAuth: true,
       role: 'COMPANY',

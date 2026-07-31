@@ -16,7 +16,7 @@ defineProps({
 
       <InfoRow :value="formatEnum(drive.interview_mode)" label="Interview Mode" />
 
-      <InfoRow :value="formatDate(drive.interview_date)" label="Interview Date" />
+      <InfoRow :value="formatDate(drive.interview_date, 'Not Scheduled')" label="Interview Date" />
     </div>
   </div>
 </template>

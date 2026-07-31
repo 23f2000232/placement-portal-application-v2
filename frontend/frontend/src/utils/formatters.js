@@ -1,6 +1,6 @@
-export function formatDate(date) {
+export function formatDate(date, fallback = '-') {
   if (!date) {
-    return 'Not Scheduled'
+    return fallback
   }
 
   return new Date(date).toLocaleDateString()

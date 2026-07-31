@@ -4,6 +4,7 @@ import StudentApplicationsView from '@/views/student/StudentApplicationsView.vue
 import StudentResumeView from '@/views/student/StudentResumeView.vue'
 import StudentInterviewsView from '@/views/student/StudentInterviewsView.vue'
 import StudentDriveDetailsView from '@/views/student/StudentDriveDetailsView.vue'
+import StudentApplicationDetailsView from '@/views/student/StudentApplicationDetailsView.vue'
 
 export default [
   {
@@ -28,6 +29,15 @@ export default [
     path: '/student/applications',
     name: 'student-applications',
     component: StudentApplicationsView,
+    meta: {
+      requiresAuth: true,
+      role: 'STUDENT',
+    },
+  },
+  {
+    path: '/student/applications/:applicationId',
+    name: 'student-application-details',
+    component: StudentApplicationDetailsView,
     meta: {
       requiresAuth: true,
       role: 'STUDENT',
