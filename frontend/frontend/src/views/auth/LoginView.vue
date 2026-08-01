@@ -2,8 +2,13 @@
   <AuthLayout>
     <AuthCard>
       <LoginForm />
-      <div class="text-center mt-3">
-        <RouterLink :to="{ name: 'student-register' }"> Register as Student </RouterLink>
+      <div class="d-flex justify-content-between">
+        <div class="text-center mt-3">
+          <RouterLink :to="{ name: 'student-register' }"> Student Registration </RouterLink>
+        </div>
+        <div class="text-center mt-3">
+          <RouterLink :to="{ name: 'company-register' }"> Company Registration </RouterLink>
+        </div>
       </div>
     </AuthCard>
   </AuthLayout>

@@ -6,7 +6,9 @@ import AppSelect from '@/components/common/form/AppSelect.vue'
 import PasswordField from '@/components/auth/PasswordField.vue'
 import ErrorAlert from '@/components/common/ErrorAlert.vue'
 import authService from '@/services/auth.service.js'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const form = reactive({
   email: '',
   password: '',
@@ -68,6 +70,22 @@ const submit = async () => {
     await authService.registerStudent(request)
 
     success.value = 'Registration successful.'
+    setTimeout(async () => {
+      await router.push({
+        name: 'login',
+      })
+    }, 2000)
+    Object.assign(form, {
+      email: '',
+      password: '',
+      full_name: '',
+      roll_number: '',
+      phone_number: '',
+      branch: '',
+      semester: '',
+      cgpa: '',
+      resume_path: '',
+    })
   } catch (err) {
     console.error('Student registration failed', err)
 

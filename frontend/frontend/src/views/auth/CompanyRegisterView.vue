@@ -1,5 +1,13 @@
-<template>
-  <h1>Company register view</h1>
-</template>
+<script setup>
+import CompanyRegistrationForm from '@/components/auth/CompanyRegistrationForm.vue'
+</script>
 
-<script setup></script>
+<template>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-7 col-md-9">
+        <CompanyRegistrationForm />
+      </div>
+    </div>
+  </div>
+</template>
