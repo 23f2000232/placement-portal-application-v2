@@ -11,6 +11,11 @@ class AuthService {
 
     return response.data
   }
+  async registerStudent(request) {
+    const response = await apiClient.post('/auth/register/student', request)
+
+    return response.data
+  }
 }
 
 export default new AuthService()

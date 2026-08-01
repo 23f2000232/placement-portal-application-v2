@@ -2,6 +2,9 @@
   <AuthLayout>
     <AuthCard>
       <LoginForm />
+      <div class="text-center mt-3">
+        <RouterLink :to="{ name: 'student-register' }"> Register as Student </RouterLink>
+      </div>
     </AuthCard>
   </AuthLayout>
 </template>
