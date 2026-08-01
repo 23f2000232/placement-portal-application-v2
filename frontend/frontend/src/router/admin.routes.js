@@ -1,6 +1,6 @@
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
-import CompanyApprovalView from '@/views/admin/CompanyApprovalView.vue'
 import PendingStudentsView from '@/views/admin/PendingStudentsView.vue'
+import PendingCompaniesView from '@/views/admin/PendingCompaniesView.vue'
 
 export default [
   {
@@ -24,7 +24,7 @@ export default [
   {
     path: '/admin/companies',
     name: 'company-approval',
-    component: CompanyApprovalView,
+    component: PendingCompaniesView,
     meta: {
       requiresAuth: true,
       role: 'ADMIN',

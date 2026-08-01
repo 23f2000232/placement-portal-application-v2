@@ -9,6 +9,7 @@ import StudentApprovalCard from '@/components/admin/StudentApprovalCard.vue'
 
 const students = ref([])
 const loading = ref(true)
+const success = ref('')
 const error = ref('')
 const processingStudentId = ref(null)
 const loadPendingStudents = async () => {
@@ -29,10 +30,13 @@ const loadPendingStudents = async () => {
 onMounted(loadPendingStudents)
 const approveStudent = async (student) => {
   processingStudentId.value = student.id
+  error.value = ''
+  success.value = ''
   try {
     await adminService.approveStudent(student.id)
 
     await loadPendingStudents()
+    success.value = 'Student approved successfully.'
   } catch (err) {
     console.error('Failed to approve student', err)
 
@@ -44,10 +48,13 @@ const approveStudent = async (student) => {
 
 const rejectStudent = async (student) => {
   processingStudentId.value = student.id
+  error.value = ''
+  success.value = ''
   try {
     await adminService.rejectStudent(student.id)
 
     await loadPendingStudents()
+    success.value = 'Student rejected successfully.'
   } catch (err) {
     console.error('Failed to reject student', err)
 
@@ -61,7 +68,9 @@ const rejectStudent = async (student) => {
   <AppLayout>
     <div class="container py-4">
       <h2 class="mb-4">Pending Student Approvals</h2>
-
+      <div v-if="success" class="alert alert-success">
+        {{ success }}
+      </div>
       <LoadingSpinner v-if="loading" />
 
       <ErrorAlert v-else-if="error" :message="error" />
