@@ -18,6 +18,8 @@ class PlacementDriveSummaryResponse(BaseModel):
 
     id: UUID
 
+    company_name: str | None = None
+
     title: str
 
     job_location: str

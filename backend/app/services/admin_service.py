@@ -43,6 +43,11 @@ from app.schemas.response.admin import StudentSummaryResponse, CompanySummaryRes
 from app.schemas.response.admin.user_summary_response import UserSummaryResponse
 from app.schemas.response.common.page_response import PageResponse
 from app.utils.page_builder import build_page_response
+from app.mappers.placement_drive_mapper import PlacementDriveMapper
+from app.schemas.requests.placement.placement_drive_filter_request import PlacementDriveFilterRequest
+from app.schemas.requests.placement.placement_drive_search_request import PlacementDriveSearchRequest
+from app.schemas.requests.placement.placement_drive_sort_request import PlacementDriveSortRequest
+from app.schemas.response.placement.placement_drive_summary_response import PlacementDriveSummaryResponse
 
 
 class AdminService:
@@ -339,6 +344,26 @@ class AdminService:
         return build_page_response(
             items=companies,
             mapper=CompanyMapper.to_summary_response,
+            page=pagination.page,
+            size=pagination.size,
+            total_items=total_items,
+        )
+
+    def get_drives(
+        self,
+        pagination: PaginationRequest,
+        filters: PlacementDriveFilterRequest,
+        sorting: PlacementDriveSortRequest,
+        search: PlacementDriveSearchRequest,
+    ) -> PageResponse[PlacementDriveSummaryResponse]:
+        total_items = self.placement_drive_repository.count_all(filters, search)
+        drives = self.placement_drive_repository.get_all_page(
+            page=pagination.page, size=pagination.size, filters=filters,
+            sorting=sorting, search=search,
+        )
+        return build_page_response(
+            items=drives,
+            mapper=PlacementDriveMapper.to_summary_response,
             page=pagination.page,
             size=pagination.size,
             total_items=total_items,

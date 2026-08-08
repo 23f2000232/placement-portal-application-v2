@@ -10,6 +10,7 @@ class StudentMapper:
     ) -> StudentSummaryResponse:
         return StudentSummaryResponse(
             id=student.id,
+            user_id=student.user_id,
             email=student.user.email,
             full_name=student.full_name,
             roll_number=student.roll_number,
@@ -17,4 +18,5 @@ class StudentMapper:
             semester=student.semester,
             cgpa=student.cgpa,
             approval_status=student.approval_status,
+            account_status=student.user.account_status,
         )

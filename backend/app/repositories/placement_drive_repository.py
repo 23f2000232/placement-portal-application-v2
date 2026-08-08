@@ -153,6 +153,30 @@ class PlacementDriveRepository(BaseRepository[PlacementDrive]):
 
         return db.session.scalar(query) or 0
 
+    def count_all(
+        self,
+        filters: PlacementDriveFilterRequest,
+        search: PlacementDriveSearchRequest,
+    ) -> int:
+        query = select(func.count()).select_from(PlacementDrive)
+        query = self._apply_filters(query, filters)
+        query = self._apply_search(query, search)
+        return db.session.scalar(query) or 0
+
+    def get_all_page(
+        self,
+        page: int,
+        size: int,
+        filters: PlacementDriveFilterRequest,
+        sorting: PlacementDriveSortRequest,
+        search: PlacementDriveSearchRequest,
+    ) -> list[PlacementDrive]:
+        query = select(PlacementDrive).join(Company)
+        query = self._apply_filters(query, filters)
+        query = self._apply_search(query, search)
+        query = self._apply_sorting(query, sorting)
+        return db.session.scalars(query.offset((page - 1) * size).limit(size)).all()
+
     def get_page(
         self,
         company_id: UUID,

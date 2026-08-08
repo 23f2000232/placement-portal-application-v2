@@ -1,5 +1,9 @@
 import apiClient from '@/api/apiClient'
 
+const cleanParams = (params) => Object.fromEntries(
+  Object.entries(params).filter(([, value]) => value !== '' && value !== null && value !== undefined),
+)
+
 class AdminService {
   async getDashboard() {
     const response = await apiClient.get('/admin/dashboard')
@@ -23,7 +27,19 @@ class AdminService {
     return response.data
   }
   async getUsers(params = {}) {
-    const response = await apiClient.get('/admin/users', { params })
+    const response = await apiClient.get('/admin/users', { params: cleanParams(params) })
+    return response.data
+  }
+  async getStudents(params = {}) {
+    const response = await apiClient.get('/admin/students', { params: cleanParams(params) })
+    return response.data
+  }
+  async getCompanies(params = {}) {
+    const response = await apiClient.get('/admin/companies', { params: cleanParams(params) })
+    return response.data
+  }
+  async getDrives(params = {}) {
+    const response = await apiClient.get('/admin/drives', { params: cleanParams(params) })
     return response.data
   }
   async setUserAccountStatus(userId, accountStatus) {

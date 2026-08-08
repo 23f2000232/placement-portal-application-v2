@@ -47,6 +47,7 @@ class PlacementDriveMapper:
     ) -> PlacementDriveSummaryResponse:
         return PlacementDriveSummaryResponse(
             id=drive.id,
+            company_name=drive.company.company_name if drive.company else None,
             title=drive.title,
             job_location=drive.job_location,
             salary_package=drive.salary_package,

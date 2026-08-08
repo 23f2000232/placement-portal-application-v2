@@ -19,6 +19,9 @@ from app.schemas.requests.user_sort_request import UserSortRequest
 from app.utils.request_parser import pick
 from app.enums import AccountStatus
 from app.mappers.placement_drive_mapper import PlacementDriveMapper
+from app.schemas.requests.placement.placement_drive_filter_request import PlacementDriveFilterRequest
+from app.schemas.requests.placement.placement_drive_search_request import PlacementDriveSearchRequest
+from app.schemas.requests.placement.placement_drive_sort_request import PlacementDriveSortRequest
 
 admin_bp = Blueprint(
     "admin",
@@ -247,3 +250,19 @@ def get_companies():
         jsonify(response.model_dump(mode="json")),
         HTTPStatus.OK,
     )
+
+
+@admin_bp.get("/drives")
+@admin_required
+def get_drives():
+    args = request.args.to_dict(flat=True)
+    pagination = PaginationRequest.model_validate(pick(args, "page", "size"))
+    filters = PlacementDriveFilterRequest.model_validate(
+        pick(args, "status", "job_type", "is_remote")
+    )
+    sorting = PlacementDriveSortRequest.model_validate(
+        pick(args, "sort_by", "sort_direction")
+    )
+    search = PlacementDriveSearchRequest.model_validate(pick(args, "search"))
+    response = admin_service.get_drives(pagination, filters, sorting, search)
+    return jsonify(response.model_dump(mode="json")), HTTPStatus.OK

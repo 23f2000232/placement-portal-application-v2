@@ -44,15 +44,15 @@ export const adminNavigation = [
     to: '/admin/dashboard',
   },
   {
-    label: 'Pending Students',
+    label: 'Students',
     to: '/admin/students',
   },
   {
-    label: 'Pending Companies',
+    label: 'Companies',
     to: '/admin/companies',
   },
   {
-    label: 'Drive Approvals',
+    label: 'Placement Drives',
     to: '/admin/drives',
   },
   {
