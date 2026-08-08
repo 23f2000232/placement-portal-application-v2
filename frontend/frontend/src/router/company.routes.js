@@ -2,6 +2,8 @@ import CompanyDashboardView from '@/views/company/CompanyDashboardView.vue'
 import CompanyPlacementDrivesView from '@/views/company/CompanyPlacementDrivesView.vue'
 import CompanyApplicationsView from '@/views/company/CompanyApplicationsView.vue'
 import CompanyInterviewsView from '@/views/company/CompanyInterviewsView.vue'
+import CompanyDriveDetailsView from '@/views/company/CompanyDriveDetailsView.vue'
+import CreateDriveView from '@/views/company/CreateDriveView.vue'
 
 export default [
   {
@@ -17,6 +19,24 @@ export default [
     path: '/company/drives',
     name: 'company-drives',
     component: CompanyPlacementDrivesView,
+    meta: {
+      requiresAuth: true,
+      role: 'COMPANY',
+    },
+  },
+  {
+    path: '/company/drives/:driveId',
+    name: 'company-drive-details',
+    component: CompanyDriveDetailsView,
+    meta: {
+      requiresAuth: true,
+      role: 'COMPANY',
+    },
+  },
+  {
+    path: '/company/drives',
+    name: 'create-company-drive',
+    component: CreateDriveView,
     meta: {
       requiresAuth: true,
       role: 'COMPANY',

@@ -20,6 +20,7 @@ from app.exceptions.placement.placement_drive_not_found_exception import (
     PlacementDriveNotFoundException,
 )
 from app.mappers.application_mapper import ApplicationMapper
+from app.mappers.placement_drive_mapper import PlacementDriveMapper
 from app.repositories import (
     ApplicationRepository,
     CompanyRepository,
@@ -41,6 +42,9 @@ from app.schemas.response.company.company_application_response import (
 )
 from app.schemas.response.company.company_application_summary_response import (
     CompanyApplicationSummaryResponse,
+)
+from app.schemas.response.placement.placement_drive_response import (
+    PlacementDriveResponse,
 )
 from app.utils.page_builder import build_page_response
 
@@ -77,6 +81,28 @@ class CompanyService:
 
         return company
 
+    def get_company_drive(
+        self,
+        user_id: UUID,
+        drive_id: UUID,
+    ) -> PlacementDriveResponse:
+        drive = self.placement_drive_repository.get_by_id(
+            drive_id,
+        )
+        company_id = self.company_repository.get_by_user_id(user_id).id
+
+        if drive is None:
+            raise PlacementDriveNotFoundException(
+                drive_id,
+            )
+
+        if drive.company_id != company_id:
+            raise PlacementDriveAccessDeniedException(
+                drive_id,
+            )
+
+        return PlacementDriveMapper.to_response(drive)
+
     def _get_company_drive(
         self,
         company_id: UUID,
@@ -90,6 +116,10 @@ class CompanyService:
             raise PlacementDriveNotFoundException(
                 drive_id,
             )
+        print(company_id)
+        print(drive_id)
+        print(drive.company_id)
+        print(drive.id)
 
         if drive.company_id != company_id:
             raise PlacementDriveAccessDeniedException(

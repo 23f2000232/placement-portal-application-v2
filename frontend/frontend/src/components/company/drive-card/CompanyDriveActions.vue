@@ -1,13 +1,17 @@
 <template>
   <div class="d-flex justify-content-end gap-2">
-    <button class="btn btn-outline-primary" type="button" @click="emit('view')">View</button>
+    <AppButton :block="false" variant="primary" @click="emit('view')"> View </AppButton>
 
-    <button class="btn btn-primary" type="button" @click="emit('edit')">Edit</button>
+    <AppButton :block="false" variant="warning" @click="emit('edit')"> Edit </AppButton>
+
+    <AppButton :block="false" variant="danger" @click="emit('delete')"> Delete </AppButton>
   </div>
 </template>
 
 <script setup>
-const emit = defineEmits(['view', 'edit'])
+import AppButton from '@/components/common/form/AppButton.vue'
+
+const emit = defineEmits(['view', 'edit', 'delete'])
 </script>
 
 <style scoped></style>

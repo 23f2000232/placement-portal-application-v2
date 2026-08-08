@@ -3,30 +3,32 @@ import CompanyDriveHeader from '@/components/company/drive-card/CompanyDriveHead
 import CompanyDriveInfo from '@/components/company/drive-card/CompanyDriveInfo.vue'
 import CompanyDriveActions from '@/components/company/drive-card/CompanyDriveActions.vue'
 
-defineProps({
+const props = defineProps({
   drive: {
     type: Object,
     required: true,
   },
 })
 
-const emit = defineEmits(['view', 'edit'])
+const emit = defineEmits(['view', 'edit', 'delete'])
 </script>
 
 <template>
   <div class="card shadow-sm mb-3">
     <div class="card-body">
-      <CompanyDriveHeader :drive="drive" />
+      <CompanyDriveHeader :drive="props.drive" />
 
       <hr />
 
-      <CompanyDriveInfo :drive="drive" />
+      <CompanyDriveInfo :drive="props.drive" />
 
       <hr />
 
-      <CompanyDriveActions @edit="emit('edit', drive)" @view="emit('view', drive)" />
+      <CompanyDriveActions
+        @delete="emit('delete', props.drive)"
+        @edit="emit('edit', props.drive)"
+        @view="emit('view', props.drive)"
+      />
     </div>
   </div>
 </template>
-
-<style scoped></style>

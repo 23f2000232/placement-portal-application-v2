@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 import InfoRow from '@/components/common/InfoRow.vue'
-import { formatDate } from '@/utils/formatters'
+import { formatDate, formatEnum } from '@/utils/formatters'
 
 const props = defineProps({
   drive: {
@@ -10,18 +10,17 @@ const props = defineProps({
     required: true,
   },
 })
+const formattedJobType = computed(() => formatEnum(props.drive.job_type))
 
 const formattedDeadline = computed(() => formatDate(props.drive.application_deadline))
 </script>
 
 <template>
-  <InfoRow :value="`${drive.salary_package} LPA`" label="Package" />
+  <InfoRow :value="`${props.drive.salary_package} LPA`" label="Package" />
 
-  <InfoRow :value="drive.job_location" label="Location" />
+  <InfoRow :value="formattedJobType" label="Job Type" />
 
-  <InfoRow :value="drive.vacancies" label="Vacancies" />
-
-  <InfoRow :value="formattedDeadline" label="Application Deadline" />
+  <InfoRow :value="formattedDeadline" label="Deadline" />
 </template>
 
 <style scoped></style>

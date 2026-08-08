@@ -39,6 +39,24 @@ company_bp = Blueprint(
 )
 
 
+@company_bp.get("/drives/<uuid:drive_id>")
+@company_required
+def get_company_drive(
+    drive_id: UUID,
+):
+    company_user_id = get_current_user_id()
+
+    response = company_service.get_company_drive(
+        user_id=company_user_id,
+        drive_id=drive_id,
+    )
+
+    return (
+        jsonify(response.model_dump(mode="json")),
+        HTTPStatus.OK,
+    )
+
+
 @company_bp.post("/drives")
 @company_required
 def create_drive():

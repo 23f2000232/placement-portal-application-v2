@@ -215,6 +215,11 @@ class PlacementDriveService:
         application_deadline: datetime,
         interview_date: datetime | None,
     ) -> None:
+        if application_deadline.tzinfo is None:
+            application_deadline = application_deadline.replace(tzinfo=UTC)
+
+        if interview_date is not None and interview_date.tzinfo is None:
+            interview_date = interview_date.replace(tzinfo=UTC)
 
         now = datetime.now(UTC)
 
