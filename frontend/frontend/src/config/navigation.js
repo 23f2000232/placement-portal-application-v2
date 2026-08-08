@@ -51,6 +51,14 @@ export const adminNavigation = [
     label: 'Pending Companies',
     to: '/admin/companies',
   },
+  {
+    label: 'Drive Approvals',
+    to: '/admin/drives',
+  },
+  {
+    label: 'User Management',
+    to: '/admin/users',
+  },
 ]
 export function getNavigation(role) {
   switch (role) {

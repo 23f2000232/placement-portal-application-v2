@@ -17,6 +17,8 @@ from app.schemas.requests.company_sort_request import CompanySortRequest
 from app.schemas.requests.user_filter_request import UserFilterRequest
 from app.schemas.requests.user_sort_request import UserSortRequest
 from app.utils.request_parser import pick
+from app.enums import AccountStatus
+from app.mappers.placement_drive_mapper import PlacementDriveMapper
 
 admin_bp = Blueprint(
     "admin",
@@ -25,6 +27,41 @@ admin_bp = Blueprint(
 )
 
 from http import HTTPStatus
+
+
+@admin_bp.get("/dashboard")
+@admin_required
+def get_dashboard():
+    return jsonify(admin_service.get_dashboard()), HTTPStatus.OK
+
+
+@admin_bp.get("/drives/pending")
+@admin_required
+def get_pending_drives():
+    drives = admin_service.get_pending_drives()
+    return jsonify([PlacementDriveMapper.to_summary_response(drive).model_dump(mode="json") for drive in drives]), HTTPStatus.OK
+
+
+@admin_bp.patch("/drives/<uuid:drive_id>/approve")
+@admin_required
+def approve_drive(drive_id: UUID):
+    drive = admin_service.approve_drive(drive_id)
+    return jsonify(PlacementDriveMapper.to_response(drive).model_dump(mode="json")), HTTPStatus.OK
+
+
+@admin_bp.patch("/drives/<uuid:drive_id>/reject")
+@admin_required
+def reject_drive(drive_id: UUID):
+    drive = admin_service.reject_drive(drive_id)
+    return jsonify(PlacementDriveMapper.to_response(drive).model_dump(mode="json")), HTTPStatus.OK
+
+
+@admin_bp.patch("/users/<uuid:user_id>/account-status")
+@admin_required
+def set_user_account_status(user_id: UUID):
+    status = AccountStatus(request.get_json()["account_status"])
+    response = admin_service.set_user_account_status(user_id, status)
+    return jsonify(response.model_dump(mode="json")), HTTPStatus.OK
 
 
 @admin_bp.get("/students/pending")

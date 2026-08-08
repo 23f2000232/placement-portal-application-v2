@@ -16,7 +16,7 @@ export default [
     },
   },
   {
-    path: '/company/drives',
+    path: '/company/drives/new',
     name: 'company-drives',
     component: CompanyPlacementDrivesView,
     meta: {

@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import companyPlacementDriveService from '@/services/company-placement-drive.service.js'
 import DriveHiringProcess from '@/components/student/drive-details/DriveHiringProcess.vue'
 import DriveEligibility from '@/components/student/drive-details/DriveEligibility.vue'
@@ -13,6 +13,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import CompanyDriveManagementSection from '@/components/company/CompanyDriveManagementSection.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const drive = ref(null)
 
@@ -40,6 +41,26 @@ const loadPlacementDrive = async () => {
 }
 
 onMounted(loadPlacementDrive)
+const manage = async (action) => {
+  try {
+    if (action === 'submit') await companyPlacementDriveService.submitPlacementDrive(drive.value.id)
+    if (action === 'close') await companyPlacementDriveService.closePlacementDrive(drive.value.id)
+    if (action === 'cancel') await companyPlacementDriveService.cancelPlacementDrive(drive.value.id)
+    await loadPlacementDrive()
+  } catch {
+    error.value = `Unable to ${action} this drive.`
+  }
+}
+const deleteDrive = async () => {
+  if (!window.confirm('Delete this draft placement drive?')) return
+  try {
+    await companyPlacementDriveService.deletePlacementDrive(drive.value.id)
+    await router.push({ name: 'company-drives' })
+  } catch {
+    error.value = 'Unable to delete this drive.'
+  }
+}
+const viewApplications = async () => router.push({ name: 'company-applications' })
 </script>
 
 <template>
@@ -60,9 +81,12 @@ onMounted(loadPlacementDrive)
       <DriveHiringProcess :drive="drive" />
 
       <CompanyDriveManagementSection
+        :drive="drive"
         @applications="viewApplications"
         @delete="deleteDrive"
-        @edit="editDrive"
+        @submit="manage('submit')"
+        @close="manage('close')"
+        @cancel="manage('cancel')"
       />
     </div>
   </AppLayout>

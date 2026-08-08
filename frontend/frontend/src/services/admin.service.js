@@ -1,9 +1,35 @@
 import apiClient from '@/api/apiClient'
 
 class AdminService {
+  async getDashboard() {
+    const response = await apiClient.get('/admin/dashboard')
+    return response.data
+  }
   async getPendingStudents() {
     const response = await apiClient.get('/admin/students/pending')
 
+    return response.data
+  }
+  async getPendingDrives() {
+    const response = await apiClient.get('/admin/drives/pending')
+    return response.data
+  }
+  async approveDrive(driveId) {
+    const response = await apiClient.patch(`/admin/drives/${driveId}/approve`)
+    return response.data
+  }
+  async rejectDrive(driveId) {
+    const response = await apiClient.patch(`/admin/drives/${driveId}/reject`)
+    return response.data
+  }
+  async getUsers(params = {}) {
+    const response = await apiClient.get('/admin/users', { params })
+    return response.data
+  }
+  async setUserAccountStatus(userId, accountStatus) {
+    const response = await apiClient.patch(`/admin/users/${userId}/account-status`, {
+      account_status: accountStatus,
+    })
     return response.data
   }
   async approveStudent(studentId) {

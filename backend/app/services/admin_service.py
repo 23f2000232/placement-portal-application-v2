@@ -2,6 +2,7 @@ import logging
 from uuid import UUID
 
 from app.enums import ApprovalStatus
+from app.enums import AccountStatus, PlacementDriveStatus
 from app.exceptions.admin import StudentNotFoundException
 from app.exceptions.admin.company_already_approved_exception import (
     CompanyAlreadyApprovedException,
@@ -342,3 +343,51 @@ class AdminService:
             size=pagination.size,
             total_items=total_items,
         )
+
+    def get_dashboard(self) -> dict:
+        """Return the headline counts required on the admin dashboard."""
+        return {
+            "students": len(self.student_repository.get_all()),
+            "companies": len(self.company_repository.get_all()),
+            "placement_drives": len(self.placement_drive_repository.get_all()),
+            "applications": self.application_repository.count(),
+            "pending_companies": len(self.company_repository.get_by_approval_status(ApprovalStatus.PENDING)),
+            "pending_drives": len(self.placement_drive_repository.get_by_status(PlacementDriveStatus.PENDING)),
+        }
+
+    def get_pending_drives(self):
+        return self.placement_drive_repository.get_by_status(PlacementDriveStatus.PENDING)
+
+    def approve_drive(self, drive_id: UUID):
+        drive = self.placement_drive_repository.get_by_id(drive_id)
+        if drive is None:
+            from app.exceptions.placement.placement_drive_not_found_exception import PlacementDriveNotFoundException
+            raise PlacementDriveNotFoundException(drive_id)
+        if drive.status != PlacementDriveStatus.PENDING:
+            from app.exceptions.common.bad_request_exception import BadRequestException
+            raise BadRequestException("Only pending placement drives can be approved")
+        drive.status = PlacementDriveStatus.OPEN
+        self.placement_drive_repository.save()
+        return drive
+
+    def reject_drive(self, drive_id: UUID):
+        drive = self.placement_drive_repository.get_by_id(drive_id)
+        if drive is None:
+            from app.exceptions.placement.placement_drive_not_found_exception import PlacementDriveNotFoundException
+            raise PlacementDriveNotFoundException(drive_id)
+        if drive.status != PlacementDriveStatus.PENDING:
+            from app.exceptions.common.bad_request_exception import BadRequestException
+            raise BadRequestException("Only pending placement drives can be rejected")
+        drive.status = PlacementDriveStatus.REJECTED
+        self.placement_drive_repository.save()
+        return drive
+
+    def set_user_account_status(self, user_id: UUID, status: AccountStatus) -> UserSummaryResponse:
+        user = self.user_repository.get_by_id(user_id)
+        if user is None:
+            from app.exceptions.admin.user_not_found_exception import UserNotFoundException
+            raise UserNotFoundException(user_id)
+        user.account_status = status
+        user.is_active = status == AccountStatus.ACTIVE
+        self.user_repository.save()
+        return UserMapper.to_summary_response(user)

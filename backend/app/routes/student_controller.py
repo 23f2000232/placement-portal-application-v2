@@ -1,7 +1,10 @@
 from http import HTTPStatus
 from uuid import UUID
 
-from flask import Blueprint, jsonify, request
+import re
+from uuid import uuid4
+
+from flask import Blueprint, abort, jsonify, request, send_from_directory
 
 from app.decorators.role_decorators import student_required
 from app.dependencies import student_service
@@ -25,6 +28,8 @@ from app.schemas.requests.student.student_drive_sort_request import (
     StudentDriveSortRequest,
 )
 from app.utils.jwt_utils import get_current_user_id
+from app.config import Config
+from app.tasks.placement_tasks import export_student_applications
 
 student_bp = Blueprint(
     "student",
@@ -176,6 +181,32 @@ def get_my_applications():
         jsonify(response.model_dump(mode="json")),
         HTTPStatus.OK,
     )
+
+
+@student_bp.get("/applications/export")
+@student_required
+def export_application_history():
+    """Queue a CSV export; the Celery worker creates it outside the request."""
+    student_user_id = get_current_user_id()
+    task_id = str(uuid4())
+    # Assign the id before enqueueing so it can safely name the export file.
+    export_student_applications.apply_async(
+        args=[str(student_user_id), task_id],
+        task_id=task_id,
+    )
+    return jsonify({"task_id": task_id, "message": "Your export is being prepared. You will be notified when it is ready."}), HTTPStatus.ACCEPTED
+
+
+@student_bp.get("/applications/export/<task_id>/download")
+@student_required
+def download_application_history_export(task_id: str):
+    if not re.fullmatch(r"[a-f0-9-]{36}", task_id):
+        abort(404)
+    student = student_service.student_repository.get_by_user_id(get_current_user_id())
+    filename = f"{student.id}_{task_id}.csv"
+    if not (Config.EXPORT_DIRECTORY / filename).is_file():
+        abort(404)
+    return send_from_directory(Config.EXPORT_DIRECTORY, filename, as_attachment=True)
 
 
 @student_bp.delete("/applications/<uuid:application_id>")

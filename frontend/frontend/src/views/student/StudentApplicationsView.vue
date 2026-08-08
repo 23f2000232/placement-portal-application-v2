@@ -1,7 +1,14 @@
 <template>
   <AppLayout>
     <div class="container py-4">
-      <h2 class="mb-4">My Applications</h2>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">My Applications</h2>
+        <button class="btn btn-outline-primary" :disabled="exporting" @click="exportHistory">
+          {{ exporting ? 'Preparing export...' : 'Export CSV' }}
+        </button>
+      </div>
+
+      <div v-if="exportMessage" class="alert alert-success">{{ exportMessage }}</div>
 
       <LoadingSpinner v-if="loading" />
 
@@ -38,6 +45,8 @@ import { useRouter } from 'vue-router'
 const applications = ref([])
 const loading = ref(true)
 const error = ref('')
+const exporting = ref(false)
+const exportMessage = ref('')
 
 const loadApplications = async () => {
   error.value = ''
@@ -68,5 +77,18 @@ const viewApplicationDetails = (application) => {
       applicationId: application.id,
     },
   })
+}
+
+const exportHistory = async () => {
+  exporting.value = true
+  exportMessage.value = ''
+  try {
+    const response = await applicationService.exportStudentApplications()
+    exportMessage.value = response.message
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Unable to start the application export.'
+  } finally {
+    exporting.value = false
+  }
 }
 </script>

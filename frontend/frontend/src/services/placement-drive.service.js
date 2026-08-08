@@ -1,11 +1,12 @@
 import apiClient from '@/api/apiClient'
 
 class PlacementDriveService {
-  async getStudentPlacementDrives(page = 1, size = 20) {
+  async getStudentPlacementDrives(params = {}) {
     const response = await apiClient.get('/student/drives', {
       params: {
-        page,
-        size,
+        page: 1,
+        size: 20,
+        ...params,
       },
     })
 

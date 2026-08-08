@@ -17,6 +17,25 @@ class CompanyPlacementDriveService {
 
     return response.data
   }
+  async updatePlacementDrive(driveId, request) {
+    const response = await apiClient.put(`/company/drives/${driveId}`, request)
+    return response.data
+  }
+  async submitPlacementDrive(driveId) {
+    const response = await apiClient.patch(`/company/drives/${driveId}/open`)
+    return response.data
+  }
+  async closePlacementDrive(driveId) {
+    const response = await apiClient.patch(`/company/drives/${driveId}/close`)
+    return response.data
+  }
+  async cancelPlacementDrive(driveId) {
+    const response = await apiClient.patch(`/company/drives/${driveId}/cancel`)
+    return response.data
+  }
+  async deletePlacementDrive(driveId) {
+    await apiClient.delete(`/company/drives/${driveId}`)
+  }
 }
 
 export default new CompanyPlacementDriveService()

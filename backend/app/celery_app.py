@@ -1,0 +1,35 @@
+from celery import Celery
+from celery.schedules import crontab
+
+
+celery = Celery("placement_portal")
+
+
+def init_celery(app) -> Celery:
+    """Configure the shared Celery application from Flask configuration."""
+    celery.conf.update(
+        broker_url=app.config["CELERY_BROKER_URL"],
+        result_backend=app.config["CELERY_RESULT_BACKEND"],
+        timezone="Asia/Kolkata",
+        task_serializer="json",
+        result_serializer="json",
+        accept_content=["json"],
+        beat_schedule={
+            "daily-deadline-reminders": {
+                "task": "app.tasks.placement_tasks.send_deadline_reminders",
+                "schedule": crontab(hour=8, minute=0),
+            },
+            "monthly-placement-activity-report": {
+                "task": "app.tasks.placement_tasks.send_monthly_activity_report",
+                "schedule": crontab(day_of_month=1, hour=8, minute=0),
+            },
+        },
+    )
+
+    class FlaskTask(celery.Task):
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return self.run(*args, **kwargs)
+
+    celery.Task = FlaskTask
+    return celery

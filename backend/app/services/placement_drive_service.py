@@ -303,7 +303,9 @@ class PlacementDriveService:
                 drive.id,
             )
 
-        drive.status = PlacementDriveStatus.OPEN
+        # A company submits a completed draft; only an administrator can
+        # approve it before it becomes visible to students.
+        drive.status = PlacementDriveStatus.PENDING
 
         try:
             self.placement_drive_repository.save()
