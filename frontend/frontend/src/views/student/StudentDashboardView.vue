@@ -6,6 +6,7 @@ import ErrorAlert from '@/components/common/ErrorAlert.vue'
 import placementDriveService from '@/services/placement-drive.service'
 import applicationService from '@/services/application.service'
 import { getCurrentUser } from '@/utils/auth'
+import DashboardChart from '@/components/common/DashboardChart.vue'
 
 const loading = ref(true)
 const error = ref('')
@@ -24,6 +25,11 @@ const cards = computed(() => [
   },
 ])
 const upcoming = computed(() => drivePage.value?.items?.[0] ?? null)
+const statusLabels = ['UNDER_REVIEW', 'SHORTLISTED', 'INTERVIEW_SCHEDULED', 'SELECTED']
+const applicationChart = computed(() => ({
+  labels: statusLabels.map((label) => label.replaceAll('_', ' ')),
+  values: statusLabels.map((label) => applicationPage.value?.items?.filter((item) => item.application_status === label).length ?? 0),
+}))
 
 onMounted(async () => {
   if (currentUser?.approval_status !== 'APPROVED') {
@@ -37,7 +43,7 @@ onMounted(async () => {
         sort_by: 'application_deadline',
         sort_direction: 'asc',
       }),
-      applicationService.getStudentApplications(),
+      applicationService.getStudentApplications({ page: 1, size: 100 }),
     ])
   } catch (err) {
     error.value = err.response?.data?.message || 'Unable to load your dashboard.'
@@ -77,6 +83,7 @@ onMounted(async () => {
             </p>
           </div>
         </div>
+        <div class="row g-4 mt-1"><section class="col-lg-5"><DashboardChart title="Approved drives available" type="bar" :labels="['Approved drives']" :values="[drivePage?.total_items ?? 0]" /></section><section class="col-lg-7"><DashboardChart title="My application pipeline" :labels="applicationChart.labels" :values="applicationChart.values" /></section></div>
         <div class="card mt-4">
           <div class="card-body">
             <h5>Approved placement drives</h5>

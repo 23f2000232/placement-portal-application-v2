@@ -23,7 +23,7 @@ export default [
     },
   },
   {
-    path: '/company/drives/new',
+    path: '/company/drives',
     name: 'company-drives',
     component: CompanyPlacementDrivesView,
     meta: {
@@ -41,7 +41,7 @@ export default [
     },
   },
   {
-    path: '/company/drives',
+    path: '/company/drives/new',
     name: 'create-company-drive',
     component: CreateDriveView,
     meta: {

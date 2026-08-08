@@ -404,6 +404,9 @@ class AdminService:
             "pending_drives": len(self.placement_drive_repository.get_by_status(PlacementDriveStatus.PENDING)),
             "drive_statuses": dict(Counter(drive.status.value for drive in drives)),
             "account_statuses": dict(Counter(user.account_status.value for user in users)),
+            "application_statuses": dict(Counter(
+                application.status.value for application in self.application_repository.get_all()
+            )),
         })
 
     def get_pending_drives(self):
