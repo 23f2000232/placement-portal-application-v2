@@ -10,5 +10,5 @@ import { getCurrentUser } from '@/utils/auth.js'
 import { getNavigation } from '@/config/navigation.js'
 
 const currentUser = getCurrentUser()
-const navigation = getNavigation(currentUser.role)
+const navigation = getNavigation(currentUser?.role)
 </script>

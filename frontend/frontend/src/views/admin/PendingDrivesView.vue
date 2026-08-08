@@ -26,8 +26,14 @@ const decide = async (drive, action) => {
   processingId.value = drive.id
   error.value = ''
   try {
-    await (action === 'approve' ? adminService.approveDrive(drive.id) : adminService.rejectDrive(drive.id))
-    notice.value = `Drive ${action}d successfully.`
+    const actions = {
+      approve: adminService.approveDrive,
+      reject: adminService.rejectDrive,
+      close: adminService.closeDrive,
+      cancel: adminService.cancelDrive,
+    }
+    await actions[action](drive.id)
+    notice.value = `Drive ${action === 'close' ? 'closed' : `${action}ed`} successfully.`
     await load()
   } catch { error.value = `Unable to ${action} this drive.` } finally { processingId.value = '' }
 }
@@ -49,7 +55,7 @@ onMounted(load)
     <div v-else class="row g-3"><div v-for="drive in drives" :key="drive.id" class="col-md-6"><article class="card h-100 shadow-sm"><div class="card-body">
       <div class="d-flex justify-content-between"><h5>{{ drive.title }}</h5><span class="badge bg-secondary">{{ formatEnum(drive.status) }}</span></div>
       <p v-if="drive.company_name" class="text-muted mb-1">{{ drive.company_name }}</p><p class="mb-1">{{ drive.job_location }} · {{ formatEnum(drive.job_type) }}</p><p class="text-muted mb-3">Deadline: {{ new Date(drive.application_deadline).toLocaleString() }}</p>
-      <template v-if="drive.status === 'PENDING'"><button class="btn btn-success me-2" :disabled="processingId === drive.id" @click="decide(drive, 'approve')">Approve</button><button class="btn btn-outline-danger" :disabled="processingId === drive.id" @click="decide(drive, 'reject')">Reject</button></template>
+      <template v-if="drive.status === 'PENDING'"><button class="btn btn-success me-2" :disabled="processingId === drive.id" @click="decide(drive, 'approve')">Approve</button><button class="btn btn-outline-danger" :disabled="processingId === drive.id" @click="decide(drive, 'reject')">Reject</button></template><template v-else-if="drive.status === 'OPEN'"><button class="btn btn-outline-secondary me-2" :disabled="processingId === drive.id" @click="decide(drive, 'close')">Close</button><button class="btn btn-outline-danger" :disabled="processingId === drive.id" @click="decide(drive, 'cancel')">Cancel</button></template><template v-else-if="!['CLOSED', 'CANCELLED'].includes(drive.status)"><button class="btn btn-outline-danger" :disabled="processingId === drive.id" @click="decide(drive, 'cancel')">Cancel</button></template>
     </div></article></div></div>
   </div></AppLayout>
 </template>

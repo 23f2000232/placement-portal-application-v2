@@ -26,6 +26,14 @@ class AdminService {
     const response = await apiClient.patch(`/admin/drives/${driveId}/reject`)
     return response.data
   }
+  async closeDrive(driveId) {
+    const response = await apiClient.patch(`/admin/drives/${driveId}/close`)
+    return response.data
+  }
+  async cancelDrive(driveId) {
+    const response = await apiClient.patch(`/admin/drives/${driveId}/cancel`)
+    return response.data
+  }
   async getUsers(params = {}) {
     const response = await apiClient.get('/admin/users', { params: cleanParams(params) })
     return response.data

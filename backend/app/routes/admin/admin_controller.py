@@ -59,6 +59,20 @@ def reject_drive(drive_id: UUID):
     return jsonify(PlacementDriveMapper.to_response(drive).model_dump(mode="json")), HTTPStatus.OK
 
 
+@admin_bp.patch("/drives/<uuid:drive_id>/close")
+@admin_required
+def close_drive(drive_id: UUID):
+    drive = admin_service.close_drive(drive_id)
+    return jsonify(PlacementDriveMapper.to_response(drive).model_dump(mode="json")), HTTPStatus.OK
+
+
+@admin_bp.patch("/drives/<uuid:drive_id>/cancel")
+@admin_required
+def cancel_drive(drive_id: UUID):
+    drive = admin_service.cancel_drive(drive_id)
+    return jsonify(PlacementDriveMapper.to_response(drive).model_dump(mode="json")), HTTPStatus.OK
+
+
 @admin_bp.patch("/users/<uuid:user_id>/account-status")
 @admin_required
 def set_user_account_status(user_id: UUID):

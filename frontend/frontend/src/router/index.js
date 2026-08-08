@@ -14,7 +14,7 @@ router.beforeEach((to) => {
   // Rule 1
   if (to.meta.guest && isAuthenticated()) {
     const currentUser = getCurrentUser()
-    return getDashboardRoute(currentUser.role)
+    return currentUser ? getDashboardRoute(currentUser.role) : { name: 'login' }
   }
 
   // Rule 2
@@ -27,6 +27,10 @@ router.beforeEach((to) => {
   // Rule 3
   if (to.meta.requiresAuth) {
     const currentUser = getCurrentUser()
+
+    if (!currentUser) {
+      return { name: 'login' }
+    }
 
     if (to.meta.role !== currentUser.role) {
       return getDashboardRoute(currentUser.role)

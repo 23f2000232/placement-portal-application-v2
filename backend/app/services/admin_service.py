@@ -1,4 +1,5 @@
 import logging
+from collections import Counter
 from uuid import UUID
 
 from app.enums import ApprovalStatus
@@ -371,13 +372,17 @@ class AdminService:
 
     def get_dashboard(self) -> dict:
         """Return the headline counts required on the admin dashboard."""
+        drives = self.placement_drive_repository.get_all()
+        users = self.user_repository.get_all()
         return {
             "students": len(self.student_repository.get_all()),
             "companies": len(self.company_repository.get_all()),
-            "placement_drives": len(self.placement_drive_repository.get_all()),
+            "placement_drives": len(drives),
             "applications": self.application_repository.count(),
             "pending_companies": len(self.company_repository.get_by_approval_status(ApprovalStatus.PENDING)),
             "pending_drives": len(self.placement_drive_repository.get_by_status(PlacementDriveStatus.PENDING)),
+            "drive_statuses": dict(Counter(drive.status.value for drive in drives)),
+            "account_statuses": dict(Counter(user.account_status.value for user in users)),
         }
 
     def get_pending_drives(self):
@@ -404,6 +409,30 @@ class AdminService:
             from app.exceptions.common.bad_request_exception import BadRequestException
             raise BadRequestException("Only pending placement drives can be rejected")
         drive.status = PlacementDriveStatus.REJECTED
+        self.placement_drive_repository.save()
+        return drive
+
+    def close_drive(self, drive_id: UUID):
+        drive = self.placement_drive_repository.get_by_id(drive_id)
+        if drive is None:
+            from app.exceptions.placement.placement_drive_not_found_exception import PlacementDriveNotFoundException
+            raise PlacementDriveNotFoundException(drive_id)
+        if drive.status != PlacementDriveStatus.OPEN:
+            from app.exceptions.common.bad_request_exception import BadRequestException
+            raise BadRequestException("Only open placement drives can be closed")
+        drive.status = PlacementDriveStatus.CLOSED
+        self.placement_drive_repository.save()
+        return drive
+
+    def cancel_drive(self, drive_id: UUID):
+        drive = self.placement_drive_repository.get_by_id(drive_id)
+        if drive is None:
+            from app.exceptions.placement.placement_drive_not_found_exception import PlacementDriveNotFoundException
+            raise PlacementDriveNotFoundException(drive_id)
+        if drive.status in (PlacementDriveStatus.CLOSED, PlacementDriveStatus.CANCELLED):
+            from app.exceptions.common.bad_request_exception import BadRequestException
+            raise BadRequestException("Closed or cancelled placement drives cannot be cancelled")
+        drive.status = PlacementDriveStatus.CANCELLED
         self.placement_drive_repository.save()
         return drive
 
