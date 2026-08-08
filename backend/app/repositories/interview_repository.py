@@ -110,3 +110,25 @@ class InterviewRepository(BaseRepository[Interview]):
             )
             .limit(1)
         )
+
+    def get_all_ordered(self) -> list[Interview]:
+        return db.session.scalars(
+            select(Interview).order_by(Interview.scheduled_for.desc())
+        ).all()
+
+    def get_student_interviews(self, student_id: UUID) -> list[Interview]:
+        return db.session.scalars(
+            select(Interview)
+            .join(Interview.application)
+            .where(Application.student_id == student_id)
+            .order_by(Interview.scheduled_for.desc())
+        ).all()
+
+    def get_company_interviews(self, company_id: UUID) -> list[Interview]:
+        return db.session.scalars(
+            select(Interview)
+            .join(Interview.application)
+            .join(Application.placement_drive)
+            .where(PlacementDrive.company_id == company_id)
+            .order_by(Interview.scheduled_for.desc())
+        ).all()

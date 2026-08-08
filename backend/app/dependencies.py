@@ -49,7 +49,7 @@ student_service = StudentService(
 )
 
 company_service = CompanyService(
-    company_repository, placement_drive_repository, application_repository
+    company_repository, placement_drive_repository, application_repository, interview_repository
 )
 
 interview_service = interview_service.InterviewService(

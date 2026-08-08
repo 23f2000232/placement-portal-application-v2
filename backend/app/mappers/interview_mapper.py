@@ -13,6 +13,9 @@ class InterviewMapper:
         return InterviewResponse(
             id=interview.id,
             application_id=interview.application_id,
+            student_name=interview.application.student.full_name,
+            company_name=interview.application.placement_drive.company.company_name,
+            job_title=interview.application.placement_drive.title,
             round_number=interview.round_number,
             interviewer_name=interview.interviewer_name,
             interview_mode=interview.interview_mode,

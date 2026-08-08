@@ -17,6 +17,12 @@ class InterviewResponse(BaseModel):
 
     application_id: UUID
 
+    student_name: str
+
+    company_name: str
+
+    job_title: str
+
     round_number: int
 
     interviewer_name: str | None

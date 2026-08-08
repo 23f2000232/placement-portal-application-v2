@@ -64,6 +64,10 @@ export const adminNavigation = [
     to: '/admin/applications',
   },
   {
+    label: 'Interviews',
+    to: '/admin/interviews',
+  },
+  {
     label: 'User Management',
     to: '/admin/users',
   },

@@ -3,7 +3,9 @@ from uuid import UUID
 from flask import Blueprint, jsonify, request
 
 from app.decorators.role_decorators import admin_required
-from app.dependencies import admin_service
+from app.dependencies import admin_service, interview_service
+from app.schemas.requests.company.complete_interview_request import CompleteInterviewRequest
+from app.schemas.requests.company.update_interview_request import UpdateInterviewRequest
 from app.schemas.common.pagination_request import PaginationRequest
 from app.schemas.requests import (
     UserSearchRequest,
@@ -286,3 +288,30 @@ def get_drives():
 @admin_required
 def get_all_applications():
     return jsonify(admin_service.get_all_applications()), HTTPStatus.OK
+
+
+@admin_bp.get("/interviews")
+@admin_required
+def get_all_interviews():
+    return jsonify([
+        interview.model_dump(mode="json")
+        for interview in interview_service.get_all_interviews()
+    ]), HTTPStatus.OK
+
+
+@admin_bp.patch("/interviews/<uuid:interview_id>")
+@admin_required
+def update_interview(interview_id: UUID):
+    response = interview_service.update_interview_as_admin(
+        interview_id, UpdateInterviewRequest.model_validate(request.get_json())
+    )
+    return jsonify(response.model_dump(mode="json")), HTTPStatus.OK
+
+
+@admin_bp.patch("/interviews/<uuid:interview_id>/complete")
+@admin_required
+def complete_interview(interview_id: UUID):
+    response = interview_service.complete_interview_as_admin(
+        interview_id, CompleteInterviewRequest.model_validate(request.get_json())
+    )
+    return jsonify(response.model_dump(mode="json")), HTTPStatus.OK

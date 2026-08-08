@@ -23,6 +23,10 @@ class CompanyService {
     const response = await apiClient.get('/company/interviews')
     return response.data
   }
+  async getApplicationInterviews(applicationId) {
+    const response = await apiClient.get(`/company/applications/${applicationId}/interviews`)
+    return response.data
+  }
   async getStudentInterviews() {
     const response = await apiClient.get('/student/interviews')
     return response.data

@@ -82,6 +82,12 @@ class InterviewService:
                 application.placement_drive_id,
             )
 
+        if application.status != ApplicationStatus.SHORTLISTED:
+            raise InvalidApplicationStatusTransitionException(
+                current_status=application.status,
+                expected_status=ApplicationStatus.SHORTLISTED,
+            )
+
         if self.interview_repository.exists_round(
             application.id,
             request.round_number,
@@ -329,7 +335,7 @@ class InterviewService:
             student_user_id,
         )
 
-        interviews = self.interview_repository.get_upcoming_student_interviews(
+        interviews = self.interview_repository.get_student_interviews(
             student.id,
         )
 
@@ -370,7 +376,7 @@ class InterviewService:
             company_user_id,
         )
 
-        interviews = self.interview_repository.get_upcoming_company_interviews(
+        interviews = self.interview_repository.get_company_interviews(
             company.id,
         )
 
@@ -380,6 +386,49 @@ class InterviewService:
             )
             for interview in interviews
         ]
+
+    def get_all_interviews(self) -> list[InterviewResponse]:
+        return [
+            InterviewMapper.to_response(interview)
+            for interview in self.interview_repository.get_all_ordered()
+        ]
+
+    def update_interview_as_admin(
+        self, interview_id: UUID, request: UpdateInterviewRequest
+    ) -> InterviewResponse:
+        interview = self.interview_repository.get_by_id(interview_id)
+        if interview is None:
+            raise InterviewNotFoundException(interview_id)
+        if interview.status != InterviewStatus.SCHEDULED:
+            raise InterviewAlreadyCompletedException(interview.id)
+        interview.interviewer_name = request.interviewer_name
+        interview.interview_mode = request.interview_mode
+        interview.meeting_link = request.meeting_link
+        interview.location = request.location
+        interview.scheduled_for = request.scheduled_for
+        try:
+            self.interview_repository.save()
+            return InterviewMapper.to_response(interview)
+        except Exception:
+            self.interview_repository.rollback()
+            raise
+
+    def complete_interview_as_admin(
+        self, interview_id: UUID, request: CompleteInterviewRequest
+    ) -> InterviewResponse:
+        interview = self.interview_repository.get_by_id(interview_id)
+        if interview is None:
+            raise InterviewNotFoundException(interview_id)
+        if interview.status != InterviewStatus.SCHEDULED:
+            raise InterviewAlreadyCompletedException(interview.id)
+        interview.status = request.status
+        interview.feedback = request.remarks
+        try:
+            self.interview_repository.save()
+            return InterviewMapper.to_response(interview)
+        except Exception:
+            self.interview_repository.rollback()
+            raise
 
     def _get_approved_company(
         self,

@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from uuid import UUID
 
 from app import Company, PlacementDrive
@@ -26,6 +27,7 @@ from app.repositories import (
     ApplicationRepository,
     CompanyRepository,
     PlacementDriveRepository,
+    InterviewRepository,
 )
 from app.schemas.common.pagination_request import PaginationRequest
 from app.schemas.requests.company.company_application_filter_request import (
@@ -59,10 +61,12 @@ class CompanyService:
         company_repository: CompanyRepository,
         placement_drive_repository: PlacementDriveRepository,
         application_repository: ApplicationRepository,
+        interview_repository: InterviewRepository,
     ):
         self.company_repository = company_repository
         self.placement_drive_repository = placement_drive_repository
         self.application_repository = application_repository
+        self.interview_repository = interview_repository
 
     def _get_approved_company(
         self,
@@ -117,11 +121,6 @@ class CompanyService:
             raise PlacementDriveNotFoundException(
                 drive_id,
             )
-        print(company_id)
-        print(drive_id)
-        print(drive.company_id)
-        print(drive.id)
-
         if drive.company_id != company_id:
             raise PlacementDriveAccessDeniedException(
                 drive_id,
@@ -192,8 +191,8 @@ class CompanyService:
         application = self.application_repository.get_company_application(company.id, application_id)
         if application is None:
             raise ApplicationNotFoundException(application_id)
-        resume_path = application.resume_path or application.student.resume_path
-        if not resume_path:
+        resume_path = application.student.resume_path or application.resume_path
+        if not resume_path or not Path(resume_path).is_file():
             raise ResumeNotFoundException()
         return resume_path
 
@@ -325,6 +324,18 @@ class CompanyService:
         company_user_id: UUID,
         application_id: UUID,
     ) -> CompanyApplicationResponse:
+        application = self.application_repository.get_company_application(
+            company_id=self._get_approved_company(company_user_id).id,
+            application_id=application_id,
+        )
+        if application is None:
+            raise ApplicationNotFoundException(application_id)
+        latest_interview = self.interview_repository.get_latest_by_application(application.id)
+        if latest_interview is None or latest_interview.status.value != "COMPLETED":
+            raise InvalidApplicationStatusTransitionException(
+                current_status=application.status,
+                expected_status=ApplicationStatus.INTERVIEW_SCHEDULED,
+            )
         return self._update_application_status(
             company_user_id,
             application_id,

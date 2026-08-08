@@ -54,6 +54,18 @@ class AdminService {
     const response = await apiClient.get('/admin/applications')
     return response.data
   }
+  async getInterviews() {
+    const response = await apiClient.get('/admin/interviews')
+    return response.data
+  }
+  async updateInterview(interviewId, request) {
+    const response = await apiClient.patch(`/admin/interviews/${interviewId}`, request)
+    return response.data
+  }
+  async completeInterview(interviewId, request) {
+    const response = await apiClient.patch(`/admin/interviews/${interviewId}/complete`, request)
+    return response.data
+  }
   async setUserAccountStatus(userId, accountStatus) {
     const response = await apiClient.patch(`/admin/users/${userId}/account-status`, {
       account_status: accountStatus,

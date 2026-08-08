@@ -4,8 +4,15 @@ import PendingCompaniesView from '@/views/admin/PendingCompaniesView.vue'
 import PendingDrivesView from '@/views/admin/PendingDrivesView.vue'
 import UserManagementView from '@/views/admin/UserManagementView.vue'
 import AdminApplicationsView from '@/views/admin/AdminApplicationsView.vue'
+import AdminInterviewsView from '@/views/admin/AdminInterviewsView.vue'
 
 export default [
+  {
+    path: '/admin/interviews',
+    name: 'admin-interviews',
+    component: AdminInterviewsView,
+    meta: { requiresAuth: true, role: 'ADMIN' },
+  },
   {
     path: '/admin/applications',
     name: 'admin-applications',
