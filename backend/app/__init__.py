@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from flask import Flask
+from sqlalchemy import inspect, text
 
 from app.config import Config
 from app.celery_app import init_celery
@@ -27,6 +28,11 @@ def create_app() -> Flask:
 
     with app.app_context():
         db.create_all()
+        # Lightweight compatibility migration for existing SQLite development databases.
+        columns = {column["name"] for column in inspect(db.engine).get_columns("students")}
+        if "skills" not in columns:
+            db.session.execute(text("ALTER TABLE students ADD COLUMN skills JSON DEFAULT '[]' NOT NULL"))
+            db.session.commit()
         seed_admin()
         register_routes(app)
 

@@ -51,6 +51,9 @@ from app.schemas.requests.student.student_drive_search_request import (
 from app.schemas.requests.student.student_drive_sort_request import (
     StudentDriveSortRequest,
 )
+from app.schemas.requests.student.update_student_profile_request import UpdateStudentProfileRequest
+from app.mappers.auth.student_mapper import StudentMapper
+from app.schemas.response.auth.student_response import StudentResponse
 from app.schemas.response.application.application_response import ApplicationResponse
 from app.schemas.response.common.page_response import PageResponse
 from app.schemas.response.student.resume_response import ResumeResponse
@@ -83,6 +86,18 @@ class StudentService:
         self.placement_drive_repository = placement_drive_repository
         self.company_repository = company_repository
         self.application_repository = application_repository
+
+    def update_profile(self, student_user_id: UUID, request: UpdateStudentProfileRequest) -> StudentResponse:
+        student = self._get_approved_student(student_user_id)
+        student.full_name = request.full_name
+        student.phone_number = request.phone_number
+        student.branch = request.branch
+        student.semester = request.semester
+        student.cgpa = request.cgpa
+        student.current_backlogs = request.current_backlogs
+        student.skills = request.skills
+        self.student_repository.save()
+        return StudentMapper.to_response(student)
 
     def _get_approved_student(
         self,

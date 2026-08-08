@@ -15,8 +15,11 @@ class StudentResponse(BaseModel):
     email: str
     full_name: str
     roll_number: str
+    phone_number: str
     branch: str
     semester: int
     cgpa: float
+    current_backlogs: int
+    skills: list[str]
     approval_status: ApprovalStatus
     role: UserRole

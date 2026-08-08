@@ -27,6 +27,7 @@ from app.schemas.requests.student.student_drive_search_request import (
 from app.schemas.requests.student.student_drive_sort_request import (
     StudentDriveSortRequest,
 )
+from app.schemas.requests.student.update_student_profile_request import UpdateStudentProfileRequest
 from app.utils.jwt_utils import get_current_user_id
 from app.config import Config
 from app.tasks.placement_tasks import export_student_applications
@@ -36,6 +37,16 @@ student_bp = Blueprint(
     __name__,
     url_prefix="/api/v1/student",
 )
+
+
+@student_bp.put("/profile")
+@student_required
+def update_profile():
+    response = student_service.update_profile(
+        get_current_user_id(),
+        UpdateStudentProfileRequest.model_validate(request.get_json()),
+    )
+    return jsonify(response.model_dump(mode="json")), HTTPStatus.OK
 
 
 @student_bp.get("/drives")

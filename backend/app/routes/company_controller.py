@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from uuid import UUID
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_file
 
 from app.decorators.role_decorators import company_required
 from app.dependencies import placement_drive_service, company_service
@@ -293,6 +293,14 @@ def get_application(
         jsonify(response.model_dump(mode="json")),
         HTTPStatus.OK,
     )
+
+
+@company_bp.get("/applications/<uuid:application_id>/resume")
+@company_required
+def download_application_resume(application_id: UUID):
+    company_user_id = get_current_user_id()
+    resume_path = company_service.get_application_resume_path(company_user_id, application_id)
+    return send_file(resume_path, mimetype="application/pdf", as_attachment=False)
 
 
 @company_bp.patch("/applications/<uuid:application_id>/under-review")

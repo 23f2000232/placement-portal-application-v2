@@ -9,6 +9,12 @@ class CompanyService {
     const response = await apiClient.get(`/company/applications/${applicationId}`)
     return response.data
   }
+  async viewApplicationResume(applicationId) {
+    const response = await apiClient.get(`/company/applications/${applicationId}/resume`, { responseType: 'blob' })
+    const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
+    window.open(url, '_blank', 'noopener,noreferrer')
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  }
   async updateApplicationStatus(applicationId, action) {
     const response = await apiClient.patch(`/company/applications/${applicationId}/${action}`)
     return response.data

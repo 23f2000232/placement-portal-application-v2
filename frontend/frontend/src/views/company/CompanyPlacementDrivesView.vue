@@ -66,10 +66,12 @@ const viewDrive = async (drive) => {
     },
   })
 }
-//
-// const editDrive = async (drive) => {}
-//
-// const deleteDrive = async (drive) => {}
+const editDrive = async (drive) => router.push({ name: 'company-drive-edit', params: { driveId: drive.id } })
+const deleteDrive = async (drive) => {
+  if (!window.confirm('Delete this draft placement drive?')) return
+  try { await CompanyPlacementDriveService.deletePlacementDrive(drive.id); await loadPlacementDrives() }
+  catch { error.value = 'Only draft placement drives can be deleted.' }
+}
 </script>
 <template>
   <AppLayout>

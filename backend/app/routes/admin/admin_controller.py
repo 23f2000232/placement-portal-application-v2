@@ -280,3 +280,9 @@ def get_drives():
     search = PlacementDriveSearchRequest.model_validate(pick(args, "search"))
     response = admin_service.get_drives(pagination, filters, sorting, search)
     return jsonify(response.model_dump(mode="json")), HTTPStatus.OK
+
+
+@admin_bp.get("/applications")
+@admin_required
+def get_all_applications():
+    return jsonify(admin_service.get_all_applications()), HTTPStatus.OK

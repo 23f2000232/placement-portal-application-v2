@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppButton from '@/components/common/form/AppButton.vue'
@@ -15,6 +15,8 @@ import branches from '@/constants/branches'
 import CompanyPlacementDriveService from '@/services/company-placement-drive.service.js'
 
 const router = useRouter()
+const props = defineProps({ driveId: { type: String, default: '' } })
+const isEdit = () => Boolean(props.driveId)
 
 const form = reactive({
   title: '',
@@ -61,9 +63,10 @@ const submit = async () => {
       }),
     )
 
-    await CompanyPlacementDriveService.createPlacementDrive(request)
+    if (isEdit()) await CompanyPlacementDriveService.updatePlacementDrive(props.driveId, request)
+    else await CompanyPlacementDriveService.createPlacementDrive(request)
 
-    success.value = 'Placement drive created successfully.'
+    success.value = `Placement drive ${isEdit() ? 'updated' : 'created'} successfully.`
 
     setTimeout(async () => {
       await router.push({
@@ -78,11 +81,23 @@ const submit = async () => {
     loading.value = false
   }
 }
+onMounted(async () => {
+  if (!isEdit()) return
+  loading.value = true
+  try {
+    const drive = await CompanyPlacementDriveService.getCompanyPlacementDrive(props.driveId)
+    Object.assign(form, {
+      ...drive,
+      application_deadline: drive.application_deadline?.slice(0, 16) || '',
+      interview_date: drive.interview_date?.slice(0, 16) || '',
+    })
+  } catch (err) { error.value = err.response?.data?.message || 'Failed to load placement drive.' } finally { loading.value = false }
+})
 </script>
 
 <template>
   <form @submit.prevent="submit">
-    <h2 class="text-center mb-4">Create Placement Drive</h2>
+    <h2 class="text-center mb-4">{{ isEdit() ? 'Edit Placement Drive' : 'Create Placement Drive' }}</h2>
 
     <ErrorAlert v-if="error" :message="error" />
 
@@ -228,8 +243,8 @@ const submit = async () => {
       </div>
     </div>
 
-    <AppButton :loading="loading" loading-text="Creating Drive..." type="submit" variant="primary">
-      Create Placement Drive
+    <AppButton :loading="loading" :loading-text="isEdit() ? 'Saving Drive...' : 'Creating Drive...'" type="submit" variant="primary">
+      {{ isEdit() ? 'Save Changes' : 'Create Placement Drive' }}
     </AppButton>
   </form>
 </template>

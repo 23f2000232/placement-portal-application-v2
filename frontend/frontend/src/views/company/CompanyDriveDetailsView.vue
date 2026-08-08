@@ -60,6 +60,7 @@ const deleteDrive = async () => {
     error.value = 'Unable to delete this drive.'
   }
 }
+const editDrive = async () => router.push({ name: 'company-drive-edit', params: { driveId: drive.value.id } })
 const viewApplications = async () => router.push({ name: 'company-applications' })
 </script>
 
@@ -82,6 +83,7 @@ const viewApplications = async () => router.push({ name: 'company-applications' 
 
       <CompanyDriveManagementSection
         :drive="drive"
+        @edit="editDrive"
         @applications="viewApplications"
         @delete="deleteDrive"
         @submit="manage('submit')"

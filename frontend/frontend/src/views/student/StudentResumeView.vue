@@ -4,6 +4,8 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import ErrorAlert from '@/components/common/ErrorAlert.vue'
 import resumeService from '@/services/resume.service'
+import apiClient from '@/api/apiClient'
+import { getCurrentUser, saveCurrentUser } from '@/utils/auth'
 
 const resume = ref(null)
 const file = ref(null)
@@ -12,6 +14,8 @@ const uploading = ref(false)
 const deleting = ref(false)
 const error = ref('')
 const success = ref('')
+const profile = ref(null)
+const profileSaving = ref(false)
 
 const loadResume = async () => {
   loading.value = true
@@ -36,6 +40,22 @@ const remove = async () => {
   finally { deleting.value = false }
 }
 onMounted(loadResume)
+profile.value = getCurrentUser()
+const saveProfile = async () => {
+  profileSaving.value = true; error.value = ''; success.value = ''
+  try {
+    const response = await apiClient.put('/student/profile', {
+      full_name: profile.value.full_name,
+      phone_number: profile.value.phone_number,
+      branch: profile.value.branch,
+      semester: Number(profile.value.semester),
+      cgpa: Number(profile.value.cgpa),
+      current_backlogs: Number(profile.value.current_backlogs || 0),
+      skills: (profile.value.skills || []).map((skill) => skill.trim()).filter(Boolean),
+    })
+    profile.value = response.data; saveCurrentUser(response.data); success.value = 'Profile updated successfully.'
+  } catch (err) { error.value = err.response?.data?.message || 'Unable to update your profile.' } finally { profileSaving.value = false }
+}
 </script>
 
 <template>
@@ -52,6 +72,7 @@ onMounted(loadResume)
         <button class="btn btn-primary me-2" :disabled="uploading" @click="upload">{{ uploading ? 'Uploading...' : (resume ? 'Replace resume' : 'Upload resume') }}</button>
         <button v-if="resume" class="btn btn-outline-danger" :disabled="deleting" @click="remove">{{ deleting ? 'Removing...' : 'Remove resume' }}</button>
       </div></div>
+      <form v-if="profile" class="card shadow-sm mt-4" @submit.prevent="saveProfile"><div class="card-body"><h5>Profile and skills</h5><div class="row g-3"><div class="col-md-6"><label class="form-label">Full name</label><input v-model.trim="profile.full_name" required class="form-control" /></div><div class="col-md-6"><label class="form-label">Phone number</label><input v-model.trim="profile.phone_number" required class="form-control" /></div><div class="col-md-4"><label class="form-label">Branch</label><input v-model.trim="profile.branch" required class="form-control" /></div><div class="col-md-4"><label class="form-label">Semester</label><input v-model.number="profile.semester" min="1" max="8" required type="number" class="form-control" /></div><div class="col-md-4"><label class="form-label">CGPA</label><input v-model.number="profile.cgpa" min="0" max="10" step="0.01" required type="number" class="form-control" /></div><div class="col-md-6"><label class="form-label">Current backlogs</label><input v-model.number="profile.current_backlogs" min="0" type="number" class="form-control" /></div><div class="col-md-6"><label class="form-label">Skills (comma separated)</label><input :value="(profile.skills || []).join(', ')" class="form-control" placeholder="Python, SQL, Vue" @input="profile.skills = $event.target.value.split(',')" /></div></div><button class="btn btn-primary mt-3" :disabled="profileSaving">{{ profileSaving ? 'Saving...' : 'Save profile' }}</button></div></form>
     </template>
   </div></AppLayout>
 </template>

@@ -4,8 +4,15 @@ import CompanyApplicationsView from '@/views/company/CompanyApplicationsView.vue
 import CompanyInterviewsView from '@/views/company/CompanyInterviewsView.vue'
 import CompanyDriveDetailsView from '@/views/company/CompanyDriveDetailsView.vue'
 import CreateDriveView from '@/views/company/CreateDriveView.vue'
+import EditDriveView from '@/views/company/EditDriveView.vue'
 
 export default [
+  {
+    path: '/company/drives/:driveId/edit',
+    name: 'company-drive-edit',
+    component: EditDriveView,
+    meta: { requiresAuth: true, role: 'COMPANY' },
+  },
   {
     path: '/company/dashboard',
     name: 'company-dashboard',

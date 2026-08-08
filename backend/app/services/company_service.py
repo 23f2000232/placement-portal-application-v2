@@ -9,6 +9,7 @@ from app.exceptions.admin.company_not_found_exception import (
 from app.exceptions.application.application_not_found_exception import (
     ApplicationNotFoundException,
 )
+from app.exceptions.application.resume_not_found_exception import ResumeNotFoundException
 from app.exceptions.application.invalid_application_status_transition_exception import (
     InvalidApplicationStatusTransitionException,
 )
@@ -185,6 +186,16 @@ class CompanyService:
             size=pagination.size,
             total_items=total_items,
         )
+
+    def get_application_resume_path(self, company_user_id: UUID, application_id: UUID) -> str:
+        company = self._get_approved_company(company_user_id)
+        application = self.application_repository.get_company_application(company.id, application_id)
+        if application is None:
+            raise ApplicationNotFoundException(application_id)
+        resume_path = application.resume_path or application.student.resume_path
+        if not resume_path:
+            raise ResumeNotFoundException()
+        return resume_path
 
     def get_application(
         self,

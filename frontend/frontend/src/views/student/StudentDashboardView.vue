@@ -77,6 +77,21 @@ onMounted(async () => {
             </p>
           </div>
         </div>
+        <div class="card mt-4">
+          <div class="card-body">
+            <h5>Approved placement drives</h5>
+            <div v-if="!drivePage?.items?.length" class="text-muted">
+              There are no approved placement drives available to you right now.
+            </div>
+            <div v-for="drive in drivePage?.items" :key="drive.id" class="border-bottom py-2">
+              <strong>{{ drive.title }}</strong
+              ><span class="text-muted">
+                · {{ drive.company_name }} · deadline
+                {{ new Date(drive.application_deadline).toLocaleDateString() }}</span
+              >
+            </div>
+          </div>
+        </div>
       </template>
     </div></AppLayout
   >

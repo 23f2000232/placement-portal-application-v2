@@ -370,6 +370,21 @@ class AdminService:
             total_items=total_items,
         )
 
+    def get_all_applications(self) -> list[dict]:
+        applications = self.application_repository.get_all()
+        return [
+            {
+                "id": str(application.id),
+                "student_name": application.student.full_name,
+                "roll_number": application.student.roll_number,
+                "company_name": application.placement_drive.company.company_name,
+                "job_title": application.placement_drive.title,
+                "status": application.status.value,
+                "applied_at": application.created_at.isoformat(),
+            }
+            for application in applications
+        ]
+
     def get_dashboard(self) -> dict:
         """Return the headline counts required on the admin dashboard."""
         drives = self.placement_drive_repository.get_all()

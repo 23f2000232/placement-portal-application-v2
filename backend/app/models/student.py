@@ -59,6 +59,11 @@ class Student(BaseModel):
         nullable=False,
         default=0,
     )
+    skills = db.Column(
+        db.JSON,
+        nullable=False,
+        default=list,
+    )
 
     user = db.relationship(
         "User",

@@ -16,6 +16,10 @@ export const studentNavigation = [
     to: '/student/resume',
   },
   {
+    label: 'Profile',
+    to: '/student/resume',
+  },
+  {
     label: 'Interviews',
     to: '/student/interviews',
   },
@@ -54,6 +58,10 @@ export const adminNavigation = [
   {
     label: 'Placement Drives',
     to: '/admin/drives',
+  },
+  {
+    label: 'Applications',
+    to: '/admin/applications',
   },
   {
     label: 'User Management',

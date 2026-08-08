@@ -50,6 +50,10 @@ class AdminService {
     const response = await apiClient.get('/admin/drives', { params: cleanParams(params) })
     return response.data
   }
+  async getApplications() {
+    const response = await apiClient.get('/admin/applications')
+    return response.data
+  }
   async setUserAccountStatus(userId, accountStatus) {
     const response = await apiClient.patch(`/admin/users/${userId}/account-status`, {
       account_status: accountStatus,
