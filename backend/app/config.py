@@ -38,3 +38,8 @@ class Config:
     GOOGLE_CHAT_WEBHOOK_URL = os.getenv("GOOGLE_CHAT_WEBHOOK_URL")
     DAILY_REMINDER_HOUR = int(os.getenv("DAILY_REMINDER_HOUR", "8"))
     DAILY_REMINDER_MINUTE = int(os.getenv("DAILY_REMINDER_MINUTE", "0"))
+    # Monthly report schedule in Asia/Kolkata. Defaults preserve the original
+    # behavior: 08:00 on the first day of each month.
+    MONTHLY_REPORT_DAY = int(os.getenv("MONTHLY_REPORT_DAY", "1"))
+    MONTHLY_REPORT_HOUR = int(os.getenv("MONTHLY_REPORT_HOUR", "8"))
+    MONTHLY_REPORT_MINUTE = int(os.getenv("MONTHLY_REPORT_MINUTE", "0"))

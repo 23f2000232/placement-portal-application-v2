@@ -31,7 +31,11 @@ def init_celery(app) -> Celery:
             },
             "monthly-placement-activity-report": {
                 "task": "app.tasks.placement_tasks.send_monthly_activity_report",
-                "schedule": crontab(day_of_month=1, hour=8, minute=0),
+                "schedule": crontab(
+                    day_of_month=app.config["MONTHLY_REPORT_DAY"],
+                    hour=app.config["MONTHLY_REPORT_HOUR"],
+                    minute=app.config["MONTHLY_REPORT_MINUTE"],
+                ),
             },
         },
     )
