@@ -9,6 +9,7 @@
       </div>
 
       <div v-if="exportMessage" class="alert alert-success">{{ exportMessage }}</div>
+      <button v-if="exportTaskId" class="btn btn-success mb-3" @click="downloadExport">Download CSV</button>
 
       <LoadingSpinner v-if="loading" />
 
@@ -47,6 +48,7 @@ const loading = ref(true)
 const error = ref('')
 const exporting = ref(false)
 const exportMessage = ref('')
+const exportTaskId = ref('')
 
 const loadApplications = async () => {
   error.value = ''
@@ -82,13 +84,40 @@ const viewApplicationDetails = (application) => {
 const exportHistory = async () => {
   exporting.value = true
   exportMessage.value = ''
+  exportTaskId.value = ''
   try {
     const response = await applicationService.exportStudentApplications()
     exportMessage.value = response.message
+    await waitForExport(response.task_id)
   } catch (err) {
     error.value = err.response?.data?.message || 'Unable to start the application export.'
   } finally {
     exporting.value = false
+  }
+}
+
+const waitForExport = async (taskId) => {
+  const attempts = 30
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    await new Promise((resolve) => window.setTimeout(resolve, 1000))
+    const status = await applicationService.getExportStatus(taskId)
+    if (status.status === 'SUCCESS') {
+      exportTaskId.value = taskId
+      exportMessage.value = 'Your export is ready to download.'
+      return
+    }
+    if (status.status === 'FAILURE') {
+      throw new Error(status.message)
+    }
+  }
+  exportMessage.value = 'Your export is still being prepared. Please try again shortly.'
+}
+
+const downloadExport = async () => {
+  try {
+    await applicationService.downloadStudentApplications(exportTaskId.value)
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Unable to download the export.'
   }
 }
 </script>

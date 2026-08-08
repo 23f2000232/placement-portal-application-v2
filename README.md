@@ -7,7 +7,7 @@ Background jobs require Redis and a Celery worker:
 ```powershell
 cd backend
 uv sync
-uv run celery -A celery_worker.celery worker --loglevel=info
+uv run celery -A celery_worker.celery worker --loglevel=info --pool=solo
 uv run celery -A celery_worker.celery beat --loglevel=info
 ```
 

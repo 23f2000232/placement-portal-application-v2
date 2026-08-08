@@ -1,6 +1,7 @@
 import csv
 import smtplib
 import json
+from uuid import UUID
 from urllib.request import Request, urlopen
 from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
@@ -75,7 +76,9 @@ def send_monthly_activity_report():
 
 @celery.task(name="app.tasks.placement_tasks.export_student_applications")
 def export_student_applications(student_user_id: str, task_id: str):
-    student = Student.query.filter_by(user_id=student_user_id).first()
+    # Celery JSON serialization turns UUIDs into strings; SQLAlchemy's UUID
+    # columns require the value to be restored before filtering.
+    student = Student.query.filter_by(user_id=UUID(student_user_id)).first()
     if student is None:
         raise ValueError("Student no longer exists")
     Config.EXPORT_DIRECTORY.mkdir(parents=True, exist_ok=True)

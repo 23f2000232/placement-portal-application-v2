@@ -49,9 +49,12 @@ from app.schemas.requests.placement.placement_drive_filter_request import Placem
 from app.schemas.requests.placement.placement_drive_search_request import PlacementDriveSearchRequest
 from app.schemas.requests.placement.placement_drive_sort_request import PlacementDriveSortRequest
 from app.schemas.response.placement.placement_drive_summary_response import PlacementDriveSummaryResponse
+from app.utils.ttl_cache import TTLCache
 
 
 class AdminService:
+
+    dashboard_cache = TTLCache(ttl_seconds=60)
 
     def __init__(
         self,
@@ -387,9 +390,12 @@ class AdminService:
 
     def get_dashboard(self) -> dict:
         """Return the headline counts required on the admin dashboard."""
+        cached = self.dashboard_cache.get("dashboard")
+        if cached is not None:
+            return cached
         drives = self.placement_drive_repository.get_all()
         users = self.user_repository.get_all()
-        return {
+        return self.dashboard_cache.set("dashboard", {
             "students": len(self.student_repository.get_all()),
             "companies": len(self.company_repository.get_all()),
             "placement_drives": len(drives),
@@ -398,7 +404,7 @@ class AdminService:
             "pending_drives": len(self.placement_drive_repository.get_by_status(PlacementDriveStatus.PENDING)),
             "drive_statuses": dict(Counter(drive.status.value for drive in drives)),
             "account_statuses": dict(Counter(user.account_status.value for user in users)),
-        }
+        })
 
     def get_pending_drives(self):
         return self.placement_drive_repository.get_by_status(PlacementDriveStatus.PENDING)

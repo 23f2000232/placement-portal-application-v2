@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Config:
+    BASE_DIR = BASE_DIR
     SECRET_KEY = os.getenv("SECRET_KEY")
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
@@ -19,7 +20,8 @@ class Config:
     SQLALCHEMY_DATABASE_URI = f"sqlite:///{BASE_DIR / 'instance' / 'placement.db'}"
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    UPLOAD_DIRECTORY = "uploads/resumes"
+    # Use an absolute path so resume access does not depend on the process cwd.
+    UPLOAD_DIRECTORY = BASE_DIR / "uploads" / "resumes"
     MAX_RESUME_SIZE = 5 * 1024 * 1024
 
     # Background processing and integrations. Keep credentials in .env only.
@@ -34,3 +36,5 @@ class Config:
     SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
     SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL")
     GOOGLE_CHAT_WEBHOOK_URL = os.getenv("GOOGLE_CHAT_WEBHOOK_URL")
+    DAILY_REMINDER_HOUR = int(os.getenv("DAILY_REMINDER_HOUR", "8"))
+    DAILY_REMINDER_MINUTE = int(os.getenv("DAILY_REMINDER_MINUTE", "0"))

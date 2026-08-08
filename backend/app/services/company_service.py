@@ -50,6 +50,7 @@ from app.schemas.response.placement.placement_drive_response import (
     PlacementDriveResponse,
 )
 from app.utils.page_builder import build_page_response
+from app.config import Config
 
 
 class CompanyService:
@@ -191,10 +192,28 @@ class CompanyService:
         application = self.application_repository.get_company_application(company.id, application_id)
         if application is None:
             raise ApplicationNotFoundException(application_id)
-        resume_path = application.student.resume_path or application.resume_path
-        if not resume_path or not Path(resume_path).is_file():
+        stored_path = application.student.resume_path or application.resume_path
+        resume_path = self._resolve_resume_path(stored_path)
+        if resume_path is None:
             raise ResumeNotFoundException()
         return resume_path
+
+    @staticmethod
+    def _resolve_resume_path(stored_path: str | None) -> str | None:
+        """Resolve both new absolute paths and legacy cwd-dependent resume paths."""
+        if not stored_path:
+            return None
+        path = Path(stored_path)
+        candidates = [path]
+        if not path.is_absolute():
+            candidates.append(Config.BASE_DIR / path)
+        # Older records sometimes contain an absolute path rooted at backend/app.
+        # The file itself is stored in backend/uploads/resumes, so recover by name.
+        candidates.append(Path(Config.UPLOAD_DIRECTORY) / path.name)
+        for candidate in candidates:
+            if candidate.is_file():
+                return str(candidate.resolve())
+        return None
 
     def get_application(
         self,
