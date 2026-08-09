@@ -41,6 +41,10 @@ export const companyNavigation = [
     label: 'Interviews',
     to: '/company/interviews',
   },
+  {
+    label: 'Offer Letters',
+    to: '/company/offer-letters',
+  },
 ]
 export const adminNavigation = [
   {

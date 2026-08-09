@@ -5,6 +5,7 @@ import CompanyInterviewsView from '@/views/company/CompanyInterviewsView.vue'
 import CompanyDriveDetailsView from '@/views/company/CompanyDriveDetailsView.vue'
 import CreateDriveView from '@/views/company/CreateDriveView.vue'
 import EditDriveView from '@/views/company/EditDriveView.vue'
+import CompanyOfferLetterView from '@/views/company/CompanyOfferLetterView.vue'
 
 export default [
   {
@@ -66,5 +67,11 @@ export default [
       requiresAuth: true,
       role: 'COMPANY',
     },
+  },
+  {
+    path: '/company/offer-letters',
+    name: 'company-offer-letters',
+    component: CompanyOfferLetterView,
+    meta: { requiresAuth: true, role: 'COMPANY' },
   },
 ]
