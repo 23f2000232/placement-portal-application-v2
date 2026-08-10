@@ -44,7 +44,7 @@ onMounted(load)
   <AppLayout><div class="container py-4">
     <h2 class="mb-4">Placement Drive Management</h2>
     <form class="row g-2 mb-4" @submit.prevent="load">
-      <div class="col-md-4"><input v-model.trim="filters.search" class="form-control" placeholder="Search title or location" /></div>
+      <div class="col-md-4"><input v-model.trim="filters.search" class="form-control" placeholder="Search company, title, or location" /></div>
       <div class="col-md-3"><select v-model="filters.status" class="form-select"><option value="">All statuses</option><option value="DRAFT">Draft</option><option value="PENDING">Pending</option><option value="OPEN">Open</option><option value="CLOSED">Closed</option><option value="REJECTED">Rejected</option><option value="CANCELLED">Cancelled</option></select></div>
       <div class="col-md-3"><select v-model="filters.job_type" class="form-select"><option value="">All job types</option><option value="FULL_TIME">Full time</option><option value="INTERN">Intern</option><option value="INTERNSHIP_WITH_PPO">Internship with PPO</option></select></div>
       <div class="col-md-2"><button class="btn btn-primary w-100">Search</button></div>

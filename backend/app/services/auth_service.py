@@ -2,6 +2,7 @@ import logging
 from uuid import UUID
 
 from flask import current_app
+from werkzeug.datastructures import FileStorage
 
 from app.enums import UserRole, ApprovalStatus, AccountStatus
 from app.exceptions.auth import (
@@ -14,6 +15,9 @@ from app.exceptions.auth import (
 from app.mappers.auth import StudentMapper, CompanyMapper
 from app.models import Student, User, Company
 from app.repositories import StudentRepository, CompanyRepository, UserRepository
+from app.services.storage.storage_service import StorageService
+from app.exceptions.application.invalid_resume_exception import InvalidResumeException
+from app.extensions import db
 from app.schemas.auth import (
     StudentRegistrationRequest,
     CompanyRegistrationRequest,
@@ -36,14 +40,17 @@ class AuthService:
         user_repository: UserRepository,
         student_repository: StudentRepository,
         company_repository: CompanyRepository,
+        storage_service: StorageService,
     ):
         self.user_repository = user_repository
         self.student_repository = student_repository
         self.company_repository = company_repository
+        self.storage_service = storage_service
 
     def register_student(
         self,
         request: StudentRegistrationRequest,
+        resume_file: FileStorage | None,
     ) -> StudentResponse:
         if self.user_repository.exists_by_email(request.email):
             self.logger.warning(
@@ -60,6 +67,9 @@ class AuthService:
         user.set_email(request.email)
         user.set_password(request.password)
 
+        if resume_file is None or not resume_file.filename or not resume_file.filename.lower().endswith(".pdf"):
+            raise InvalidResumeException()
+
         student = Student(
             full_name=request.full_name,
             roll_number=request.roll_number,
@@ -67,14 +77,23 @@ class AuthService:
             branch=request.branch,
             semester=request.semester,
             cgpa=request.cgpa,
-            resume_path=request.resume_path,
+            resume_path=None,
         )
 
         student.user = user
 
+        uploaded_resume_path = None
         try:
             self.user_repository.create(user)
             self.student_repository.create(student)
+            # Assign primary keys before naming the resume file, without
+            # committing registration until the file has been stored.
+            db.session.flush()
+            uploaded_resume_path = self.storage_service.upload_resume(
+                student_id=str(student.id),
+                file=resume_file,
+            )
+            student.resume_path = uploaded_resume_path
             self.user_repository.save()
         except Exception:
             self.logger.exception(
@@ -82,6 +101,8 @@ class AuthService:
                 request.email,
             )
             self.user_repository.rollback()
+            if uploaded_resume_path:
+                self.storage_service.delete_resume(uploaded_resume_path)
             raise
         return StudentMapper.to_response(student)
 

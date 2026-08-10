@@ -11,8 +11,10 @@ class AuthService {
 
     return response.data
   }
-  async registerStudent(request) {
-    const response = await apiClient.post('/auth/register/student', request)
+  async registerStudent(formData) {
+    const response = await apiClient.post('/auth/register/student', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
 
     return response.data
   }

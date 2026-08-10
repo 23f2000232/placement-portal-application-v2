@@ -21,11 +21,12 @@ auth_bp = Blueprint(
 
 @auth_bp.post("/register/student")
 def register_student():
-    data = request.get_json()
+    data = request.form.to_dict()
+    resume_file = request.files.get("resume")
 
     registration_request = StudentRegistrationRequest.model_validate(data)
 
-    response = auth_service.register_student(registration_request)
+    response = auth_service.register_student(registration_request, resume_file)
 
     return (
         jsonify(response.model_dump(mode="json")),

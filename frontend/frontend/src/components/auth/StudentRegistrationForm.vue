@@ -18,8 +18,8 @@ const form = reactive({
   branch: '',
   semester: '',
   cgpa: '',
-  resume_path: '',
 })
+const resumeFile = ref(null)
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
@@ -55,17 +55,24 @@ const submit = async () => {
   loading.value = true
 
   try {
-    const request = {
-      email: form.email,
-      password: form.password,
-      full_name: form.full_name,
-      roll_number: form.roll_number,
-      phone_number: form.phone_number,
-      branch: form.branch,
-      semester: Number(form.semester),
-      cgpa: Number(form.cgpa),
-      resume_path: form.resume_path,
+    if (!resumeFile.value) {
+      error.value = 'Please select a PDF resume.'
+      return
     }
+    if (resumeFile.value.type && resumeFile.value.type !== 'application/pdf') {
+      error.value = 'Only PDF files are allowed.'
+      return
+    }
+    const request = new FormData()
+    request.append('email', form.email)
+    request.append('password', form.password)
+    request.append('full_name', form.full_name)
+    request.append('roll_number', form.roll_number)
+    request.append('phone_number', form.phone_number)
+    request.append('branch', form.branch)
+    request.append('semester', String(Number(form.semester)))
+    request.append('cgpa', String(Number(form.cgpa)))
+    request.append('resume', resumeFile.value)
 
     await authService.registerStudent(request)
 
@@ -84,12 +91,12 @@ const submit = async () => {
       branch: '',
       semester: '',
       cgpa: '',
-      resume_path: '',
     })
+    resumeFile.value = null
   } catch (err) {
     console.error('Student registration failed', err)
 
-    error.value = 'Unable to register student.'
+    error.value = err.response?.data?.message || 'Unable to register student.'
   } finally {
     loading.value = false
   }
@@ -160,13 +167,11 @@ const submit = async () => {
       step="0.01"
       type="number"
     />
-    <AppInput
-      id="resume-path"
-      v-model="form.resume_path"
-      label="Resume Path"
-      placeholder="Resume file path"
-      required
-    />
+    <div class="mb-3">
+      <label for="resume" class="form-label">Resume (PDF)</label>
+      <input id="resume" accept="application/pdf,.pdf" class="form-control" required type="file" @change="resumeFile = $event.target.files?.[0] || null" />
+      <div class="form-text">Upload your resume as a PDF file.</div>
+    </div>
     <AppButton :loading="loading" loading-text="Registering..." type="submit" variant="primary">
       Register
     </AppButton>

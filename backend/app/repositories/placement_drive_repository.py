@@ -124,6 +124,7 @@ class PlacementDriveRepository(BaseRepository[PlacementDrive]):
                 or_(
                     PlacementDrive.title.ilike(pattern),
                     PlacementDrive.job_location.ilike(pattern),
+                    Company.company_name.ilike(pattern),
                 )
             )
 
@@ -138,6 +139,7 @@ class PlacementDriveRepository(BaseRepository[PlacementDrive]):
         query = (
             select(func.count())
             .select_from(PlacementDrive)
+            .join(Company)
             .where(PlacementDrive.company_id == company_id)
         )
 
@@ -158,7 +160,7 @@ class PlacementDriveRepository(BaseRepository[PlacementDrive]):
         filters: PlacementDriveFilterRequest,
         search: PlacementDriveSearchRequest,
     ) -> int:
-        query = select(func.count()).select_from(PlacementDrive)
+        query = select(func.count()).select_from(PlacementDrive).join(Company)
         query = self._apply_filters(query, filters)
         query = self._apply_search(query, search)
         return db.session.scalar(query) or 0
@@ -188,7 +190,7 @@ class PlacementDriveRepository(BaseRepository[PlacementDrive]):
     ) -> list[PlacementDrive]:
         offset = (page - 1) * size
 
-        query = select(PlacementDrive).where(PlacementDrive.company_id == company_id)
+        query = select(PlacementDrive).join(Company).where(PlacementDrive.company_id == company_id)
 
         query = self._apply_filters(
             query,

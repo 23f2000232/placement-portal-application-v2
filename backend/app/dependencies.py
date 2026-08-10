@@ -24,7 +24,7 @@ placement_record_repository = placement_record_repository.PlacementRecordReposit
 storage_service = LocalStorageService()
 interview_repository = InterviewRepository()
 
-auth_service = AuthService(user_repository, student_repository, company_repository)
+auth_service = AuthService(user_repository, student_repository, company_repository, storage_service)
 
 admin_service = AdminService(
     student_repository=student_repository,
