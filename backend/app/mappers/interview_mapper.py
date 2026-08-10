@@ -1,3 +1,5 @@
+from datetime import UTC
+
 from app.models import Interview
 from app.schemas.response.interview.interview_response import (
     InterviewResponse,
@@ -5,6 +7,11 @@ from app.schemas.response.interview.interview_response import (
 
 
 class InterviewMapper:
+
+    @staticmethod
+    def _as_utc(value):
+        """SQLite returns timezone-aware columns as naive UTC datetimes."""
+        return value if value.tzinfo is not None else value.replace(tzinfo=UTC)
 
     @staticmethod
     def to_response(
@@ -21,7 +28,9 @@ class InterviewMapper:
             interview_mode=interview.interview_mode,
             meeting_link=interview.meeting_link,
             location=interview.location,
-            scheduled_for=interview.scheduled_for,
+            # The browser submits an ISO UTC instant. Restore its UTC offset on
+            # SQLite responses so clients can correctly render local time.
+            scheduled_for=InterviewMapper._as_utc(interview.scheduled_for),
             feedback=interview.feedback,
             status=interview.status,
             created_at=interview.created_at,

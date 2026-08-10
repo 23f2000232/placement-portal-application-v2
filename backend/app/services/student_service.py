@@ -1,10 +1,11 @@
 import logging
+from datetime import UTC, datetime
 from uuid import UUID
 
 from werkzeug.datastructures import FileStorage
 
 from app import Student, Application
-from app.enums import ApprovalStatus, ApplicationStatus
+from app.enums import ApprovalStatus, ApplicationStatus, PlacementDriveStatus
 from app.exceptions.admin import StudentNotFoundException
 from app.exceptions.application.already_applied_exception import AlreadyAppliedException
 from app.exceptions.application.application_not_found_exception import (
@@ -12,6 +13,9 @@ from app.exceptions.application.application_not_found_exception import (
 )
 from app.exceptions.application.application_not_withdrawable_exception import (
     ApplicationNotWithdrawableException,
+)
+from app.exceptions.application.application_deadline_passed_exception import (
+    ApplicationDeadlinePassedException,
 )
 from app.exceptions.application.invalid_resume_exception import InvalidResumeException
 from app.exceptions.application.resume_not_found_exception import (
@@ -207,6 +211,19 @@ class StudentService:
 
         if not student.resume_path:
             raise ResumeNotUploadedException()
+
+        # Enforce the deadline here as well as in the availability query. This
+        # prevents direct API requests and race conditions from creating an
+        # application after a deadline has elapsed.
+        requested_drive = self.placement_drive_repository.get_by_id(drive_id)
+        if requested_drive is not None and requested_drive.status == PlacementDriveStatus.OPEN:
+            deadline = requested_drive.application_deadline
+            if deadline.tzinfo is None:
+                deadline = deadline.replace(tzinfo=UTC)
+            if deadline <= datetime.now(UTC):
+                requested_drive.status = PlacementDriveStatus.CLOSED
+                self.placement_drive_repository.save()
+                raise ApplicationDeadlinePassedException()
 
         drive = self.placement_drive_repository.get_drive_for_application(
             student=student,

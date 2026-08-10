@@ -21,9 +21,8 @@ const deferredInstallPrompt = ref(null)
 const canInstall = ref(false)
 
 const saveInstallPrompt = (event) => {
-  event.preventDefault()
-  deferredInstallPrompt.value = event
-  canInstall.value = true
+  deferredInstallPrompt.value = window.deferredPwaInstallPrompt || event?.detail
+  canInstall.value = Boolean(deferredInstallPrompt.value)
 }
 
 const installApp = async () => {
@@ -32,11 +31,15 @@ const installApp = async () => {
   deferredInstallPrompt.value.prompt()
   await deferredInstallPrompt.value.userChoice
   deferredInstallPrompt.value = null
+  window.deferredPwaInstallPrompt = null
   canInstall.value = false
 }
 
-onMounted(() => window.addEventListener('beforeinstallprompt', saveInstallPrompt))
-onBeforeUnmount(() => window.removeEventListener('beforeinstallprompt', saveInstallPrompt))
+onMounted(() => {
+  saveInstallPrompt()
+  window.addEventListener('pwa-installable', saveInstallPrompt)
+})
+onBeforeUnmount(() => window.removeEventListener('pwa-installable', saveInstallPrompt))
 
 const signOut = async () => {
   logout()

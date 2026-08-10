@@ -5,11 +5,11 @@ import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import ErrorAlert from '@/components/common/ErrorAlert.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import adminService from '@/services/admin.service'
-import { formatEnum } from '@/utils/formatters'
+import { formatEnum, toLocalDateTimeInput } from '@/utils/formatters'
 const interviews = ref([]); const loading = ref(true); const error = ref(''); const processingId = ref(''); const remarks = ref(''); const editing = ref(null)
 const load = async () => { loading.value = true; try { interviews.value = await adminService.getInterviews() } catch (err) { error.value = err.response?.data?.message || 'Unable to load interviews.' } finally { loading.value = false } }
 const complete = async (item, status) => { processingId.value = item.id; try { await adminService.completeInterview(item.id, { status, remarks: remarks.value || null }); remarks.value = ''; await load() } catch (err) { error.value = err.response?.data?.message || 'Unable to update interview.' } finally { processingId.value = '' } }
-const edit = (item) => { editing.value = { ...item, scheduled_for: new Date(item.scheduled_for).toISOString().slice(0, 16) } }
+const edit = (item) => { editing.value = { ...item, scheduled_for: toLocalDateTimeInput(item.scheduled_for) } }
 const save = async () => { processingId.value = editing.value.id; try { const item = editing.value; await adminService.updateInterview(item.id, { interviewer_name: item.interviewer_name || null, interview_mode: item.interview_mode, meeting_link: item.interview_mode === 'ONLINE' ? item.meeting_link : null, location: item.interview_mode === 'OFFLINE' ? item.location : null, scheduled_for: new Date(item.scheduled_for).toISOString() }); editing.value = null; await load() } catch (err) { error.value = err.response?.data?.message || 'Unable to reschedule interview.' } finally { processingId.value = '' } }
 onMounted(load)
 </script>

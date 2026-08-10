@@ -81,7 +81,7 @@ const applyToDrive = async () => {
     applied.value = true
   } catch (err) {
     console.error('Failed to apply for placement drive', err)
-    applyError.value = 'Unable to submit application.'
+    applyError.value = err.response?.data?.message || 'Unable to submit application.'
   } finally {
     applying.value = false
   }

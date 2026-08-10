@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from celery import Celery
 from celery.schedules import crontab
@@ -22,6 +23,10 @@ def init_celery(app) -> Celery:
         worker_pool="solo" if os.name == "nt" else "prefork",
         worker_prefetch_multiplier=1,
         beat_schedule={
+            "close-expired-placement-drives": {
+                "task": "app.tasks.placement_tasks.close_expired_placement_drives",
+                "schedule": timedelta(minutes=1),
+            },
             "daily-deadline-reminders": {
                 "task": "app.tasks.placement_tasks.send_deadline_reminders",
                 "schedule": crontab(

@@ -13,6 +13,17 @@ from app.extensions import db
 from app.models import Application, Notification, PlacementDrive, Student, User
 
 
+@celery.task(name="app.tasks.placement_tasks.close_expired_placement_drives")
+def close_expired_placement_drives():
+    """Close open drives whose application deadline has elapsed."""
+    closed = PlacementDrive.query.filter(
+        PlacementDrive.status == PlacementDriveStatus.OPEN,
+        PlacementDrive.application_deadline <= datetime.now(UTC),
+    ).update({PlacementDrive.status: PlacementDriveStatus.CLOSED}, synchronize_session=False)
+    db.session.commit()
+    return {"drives_closed": closed}
+
+
 def _send_email(recipient: str, subject: str, html: str) -> bool:
     """Send email only when SMTP credentials have been configured."""
     if not all((Config.SMTP_HOST, Config.SMTP_USERNAME, Config.SMTP_PASSWORD, Config.SMTP_FROM_EMAIL)):
